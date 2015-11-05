@@ -86,9 +86,8 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 		return realThis();
 	}
 
-	/** Add zero or more select items */
-	public T select(String... items) {
-		return addFragment(new SelectFragment(items));
+	public T select() {
+		return addFragment(new SelectFragment());
 	}
 
 	public T select(String items, Object... bindVariables) {

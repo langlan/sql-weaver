@@ -7,8 +7,8 @@ import java.util.List;
 
 public class SelectFragment extends AbstractListFragment {
 
-	public SelectFragment(String[] items) {
-		super(items);
+	public SelectFragment() {
+		super();
 	}
 
 	public SelectFragment(String items, Object[] bindVariables) {

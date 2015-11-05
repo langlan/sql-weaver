@@ -12,6 +12,10 @@ public abstract class AbstractListFragment implements Fragment {
 	protected List<Object> items;
 	private Object[] vars = Variables.EMPTY_ARRAY;
 
+	public AbstractListFragment() {
+		this.items = new LinkedList<Object>();
+	}
+
 	public AbstractListFragment(String[] items) {
 		this.items = new LinkedList<Object>(Arrays.asList(items));
 	}
