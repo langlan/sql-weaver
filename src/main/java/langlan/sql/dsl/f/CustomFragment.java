@@ -15,13 +15,13 @@ public class CustomFragment implements Fragment {
 	}
 
 	@Override
-	public void join(StringBuilder sb, List<Object> variables) {
+	public void joinFragment(StringBuilder sb, List<Object> variables) {
 		sb.append(fragment);
 		variables.addAll(Arrays.asList(vars));
 	}
 
 	@Override
-	public void validate(List<Fragment> fragments) {
+	public void validateFragmentPosition(List<Fragment> fragments) {
 		
 	}
 }

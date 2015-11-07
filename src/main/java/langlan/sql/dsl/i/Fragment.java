@@ -4,6 +4,6 @@ import java.util.List;
 
 /** Sql Fragment */
 public interface Fragment {
-	void join(StringBuilder sb, List<Object> variables);
-	void validate(List<Fragment> fragments);
+	void joinFragment(StringBuilder sb, List<Object> variables);
+	void validateFragmentPosition(List<Fragment> fragments);
 }

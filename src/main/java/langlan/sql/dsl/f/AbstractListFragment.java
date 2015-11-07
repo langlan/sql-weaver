@@ -9,38 +9,44 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class AbstractListFragment implements Fragment {
-	protected List<Object> items;
+	//element is String or Fragment
+	protected List<Object> items = new LinkedList<Object>();
 	private Object[] vars = Variables.EMPTY_ARRAY;
 
-	public AbstractListFragment() {
-		this.items = new LinkedList<Object>();
-	}
-
-	public AbstractListFragment(String[] items) {
-		this.items = new LinkedList<Object>(Arrays.asList(items));
+	public AbstractListFragment(String... items) {
+		for (String item : items) {
+			this.pushItem(item);
+		}
 	}
 
 	public AbstractListFragment(String items, Object[] bindVariables) {
-		this.items = new LinkedList<Object>();
-		this.items.add(items);
+		this.pushItem(items);
 		this.vars = bindVariables;
 	}
 
 	@Override
-	public void join(StringBuilder sb, List<Object> variables) {
+	public void joinFragment(StringBuilder sb, List<Object> variables) {
 		variables.addAll(Arrays.asList(vars));
+		sb.append(getName());
 		for (Iterator<Object> iterator = items.iterator(); iterator.hasNext(); ) {
 			Object item = iterator.next();
 			sb.append(" ");
 			if (item instanceof Fragment) {
-				((Fragment) item).join(sb, variables);
+				((Fragment) item).joinFragment(sb, variables);
 			} else {
 				sb.append(item);
 			}
 			if (iterator.hasNext()) {
-				sb.append(", ");
+				sb.append(",");
 			}
 		}
+	}
+
+	// Do not make public
+	protected void pushItem(String item) {
+		//if (item != null && !item.trim().isEmpty()) {
+		items.add(item);
+		//}
 	}
 
 	public void pushItem(Fragment item) {
@@ -53,5 +59,15 @@ public abstract class AbstractListFragment implements Fragment {
 
 	public Object popItem() {
 		return items.remove(items.size() - 1);
+	}
+
+	public String getName() {
+		String name = getClass().getSimpleName().replace("Fragment", "");
+		name = name.replaceAll("[a-z][A-Z]", " $0");
+		return name;
+	}
+
+	public boolean hasItem() {
+		return !items.isEmpty();
 	}
 }

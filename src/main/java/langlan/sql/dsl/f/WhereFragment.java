@@ -1,12 +1,12 @@
 package langlan.sql.dsl.f;
 
-import java.util.Arrays;
-import java.util.List;
-
 import langlan.sql.dsl.d.CriteriaGroupD;
 import langlan.sql.dsl.d.SqlD;
 import langlan.sql.dsl.i.Fragment;
 import langlan.sql.dsl.u.FragmentsValidator;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @param <OSQL> The Owner : a Sql or a SubSql scope.
@@ -27,7 +27,7 @@ public class WhereFragment<OSQL extends SqlD<OSQL>> extends CriteriaGroupD<Where
 	}
 
 	@Override
-	public void join(StringBuilder sb, List<Object> variables) {
+	public void joinFragment(StringBuilder sb, List<Object> variables) {
 		if (!this.getAppliedCriterias().isEmpty()) {
 			sb.append("Where");
 			sb.append(" ");
@@ -37,8 +37,8 @@ public class WhereFragment<OSQL extends SqlD<OSQL>> extends CriteriaGroupD<Where
 	}
 	
 	@Override
-	public void validate(List<Fragment> fragments) {
-		FragmentsValidator.require(fragments, FromFragment.class);
-		FragmentsValidator.requireNotExists(fragments, getClass());
+	public void validateFragmentPosition(List<Fragment> fragments) {
+		FragmentsValidator.assertExistsAndNotEmpty(fragments, FromFragment.class);
+		// FragmentsValidator.assertNotExists(fragments, getClass());
 	}
 }

@@ -11,7 +11,7 @@ public class ItemFragment extends CustomFragment {
 	}
 
 	@Override
-	public void validate(List<Fragment> fragments) {
-		FragmentsValidator.requirLastFragmentInstanceof(fragments, AbstractListFragment.class);
+	public void validateFragmentPosition(List<Fragment> fragments) {
+		FragmentsValidator.assertLastFragmentInstanceof(fragments, AbstractListFragment.class);
 	}
 }

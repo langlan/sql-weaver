@@ -52,13 +52,13 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 		Fragment f = fragments.get(fragments.size() - 1);
 		if (f instanceof AbstractListFragment) {
 			Object fi = ((AbstractListFragment) f).peekItem();
-			if (fi != null && fi instanceof ItemFragment) {
+			if (fi != null && fi instanceof Fragment) {
 				((AbstractListFragment) f).popItem();
 			} else {
-				fragments.remove(fragments.size() - 1);
+				fragments.removeLast();
 			}
 		} else {
-			fragments.remove(fragments.size() - 1);
+			fragments.removeLast();
 		}
 		version++;
 		return super.$invalidLastItem();
@@ -75,15 +75,15 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 		if (fragments == null) {
 			fragments = new LinkedList<Fragment>();
 		}
-		fragment.validate(Collections.unmodifiableList(fragments));
+		fragment.validateFragmentPosition(Collections.unmodifiableList(fragments));
 		if (fragment instanceof ItemFragment) {
-			Fragment f = fragments.get(fragments.size() - 1);
+			Fragment f = fragments.getLast();
 			((AbstractListFragment) f).pushItem(fragment);
 		} else {
 			fragments.add(fragment);
 		}
 		version++;
-		return realThis();
+		return this.$setInvokable();
 	}
 
 	public T select() {
@@ -171,7 +171,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 				if (sb.length() > 0) {
 					sb.append(" ");
 				}
-				fragment.join(sb, variables);
+				fragment.joinFragment(sb, variables);
 			}
 			vars = variables.toArray();
 			generatedSql = sb.toString();

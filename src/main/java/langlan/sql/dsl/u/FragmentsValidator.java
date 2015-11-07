@@ -1,37 +1,48 @@
 package langlan.sql.dsl.u;
 
-import java.util.List;
-
 import langlan.sql.dsl.e.SqlSyntaxException;
+import langlan.sql.dsl.f.AbstractListFragment;
 import langlan.sql.dsl.i.Fragment;
 
+import java.util.List;
+
 public class FragmentsValidator {
-	public static void requirLastFragmentInstanceof(List<Fragment> fragments, Class<? extends Fragment> type) {
+	public static void assertLastFragmentInstanceof(List<Fragment> fragments, Class<? extends Fragment> type) {
 		if (fragments.size() == 0) {
-			throw new SqlSyntaxException("None fragment exists!");
-		} else if (type.isInstance(fragments.get(fragments.size() - 1))) {
-			throw new SqlSyntaxException("Expecting previous fragment instance of [" + type.getClass() + "]!");
+			throw new SqlSyntaxException("None fragment exists! expect instance of [" + type.getSimpleName() + "]!");
+		} else if (!type.isInstance(fragments.get(fragments.size() - 1))) {
+			throw new SqlSyntaxException("Expecting previous fragment instance of [" + type.getSimpleName() + "]!");
 		}
 	}
 
-	public static void require(List<Fragment> fragments, Class<? extends Fragment> type) {
-		if (!hasFragment(fragments, type)) {
+	public static void assertExistsAndNotEmpty(List<Fragment> fragments, Class<? extends Fragment> type) {
+		Fragment f = getAny(fragments, type);
+		if (f == null) {
 			throw new SqlSyntaxException("Clause '" + type.getName().replace("Fragment", "") + "' is missing!");
+		} else if (f instanceof AbstractListFragment) {
+			AbstractListFragment lf = (AbstractListFragment) f;
+			if (!lf.hasItem()) {
+				throw new SqlSyntaxException("Empty [" + lf.getName() + "] Clause");
+			}
 		}
 	}
 
-	public static void requireNotExists(List<Fragment> fragments, Class<? extends Fragment> type) {
-		if (hasFragment(fragments, type)) {
+	public static void assertNotExists(List<Fragment> fragments, Class<? extends Fragment> type) {
+		if (hasAny(fragments, type)) {
 			throw new SqlSyntaxException("Multiple Clause '" + type.getName().replace("Fragment", "") + "'");
 		}
 	}
 
-	public static boolean hasFragment(List<Fragment> fragments, Class<? extends Fragment> clazz) {
+	public static <T extends Fragment> T getAny(List<Fragment> fragments, Class<T> clazz) {
 		for (Fragment f : fragments) {
 			if (clazz.isInstance(f)) {
-				return true;
+				return clazz.cast(f);
 			}
 		}
-		return false;
+		return null;
+	}
+
+	public static boolean hasAny(List<Fragment> fragments, Class<? extends Fragment> clazz) {
+		return getAny(fragments, clazz) != null;
 	}
 }
