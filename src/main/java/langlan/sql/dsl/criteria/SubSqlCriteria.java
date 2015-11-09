@@ -58,7 +58,7 @@ public class SubSqlCriteria<O extends CriteriaStrategyAware> extends SubSqlCrite
 		}
 	}
 
-	public static class InSubSql<O extends CriteriaGroupD<?, ?>> extends SubSqlCriteriaD<NotExistsSubSql<O>, O> {
+	public static class InSubSql<O extends CriteriaGroupD<?, ?>> extends SubSqlCriteriaD<InSubSql<O>, O> {
 		public InSubSql(O owner, String testing) {
 			super(owner, testing + " In");
 		}
@@ -73,7 +73,7 @@ public class SubSqlCriteria<O extends CriteriaStrategyAware> extends SubSqlCrite
 		}
 	}
 
-	public static class NotInSubSql<O extends CriteriaGroupD<?, ?>> extends SubSqlCriteriaD<NotExistsSubSql<O>, O> {
+	public static class NotInSubSql<O extends CriteriaGroupD<?, ?>> extends SubSqlCriteriaD<NotInSubSql<O>, O> {
 		public NotInSubSql(O owner, String testing) {
 			super(owner, testing + " Not In");
 		}

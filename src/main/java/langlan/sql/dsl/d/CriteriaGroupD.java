@@ -10,6 +10,7 @@ import langlan.sql.dsl.i.Criteria;
 import langlan.sql.dsl.i.CriteriaStrategy;
 import langlan.sql.dsl.i.CriteriaStrategyAware;
 import langlan.sql.dsl.i.VariablesBound;
+import langlan.sql.dsl.u.Variables;
 
 import java.util.*;
 
@@ -288,6 +289,14 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return addCriteria(new BinaryComparison(exp, "Like", value));
 	}
 
+	/**
+	 * Add a (Like) criteria, diffence from {@link #like(String, String)}, this method will wrap bind-variale using
+	 * {@link Variables#wrap4Like(String, boolean, boolean)}
+	 */
+	public T like(String testing, String value, boolean fuzzLeft, boolean fuzzRight) {
+		return like(testing, Variables.wrap4Like(value, fuzzLeft, fuzzRight));
+	}
+
 	/** Add a (Less than) criteria */
 	public T lt(String exp, Object value) {
 		return addCriteria(new BinaryComparison(exp, "<", value));
@@ -323,8 +332,16 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	}
 
 	/** Add a (NOT Like) criteria */
-	public T notLike(String exp, String value) {
-		return addCriteria(new BinaryComparison(exp, "Like", value).negative());
+	public T notLike(String testing, String value) {
+		return addCriteria(new BinaryComparison(testing, "Like", value).negative());
+	}
+
+	/**
+	 * Add a (NOT Like) criteria, diffence from {@link #notLike(String, String)}, this method will wrap bind-variale
+	 * using {@link Variables#wrap4Like(String, boolean, boolean)}
+	 */
+	public T notLike(String testing, String value, boolean fuzzLeft, boolean fuzzRight) {
+		return notLike(testing, Variables.wrap4Like(value, fuzzLeft, fuzzRight));
 	}
 
 	/**
