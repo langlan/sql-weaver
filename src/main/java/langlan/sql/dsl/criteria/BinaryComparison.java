@@ -21,7 +21,7 @@ public class BinaryComparison extends AbstractSingleValueTestingCriteria {
 			} else if (m.group(2) != null) {
 				this.expr = (testing + " " + operator + " ?");
 			} else if (m.group(3) != null) {
-				if (!(right instanceof Object[]) && !(right instanceof Collection)) {
+				if (right != null && !(right instanceof Object[]) && !(right instanceof Collection)) {
 					throw new IllegalArgumentException("The Bind-Variable of 'IN' Should be array-type or Collection-type");
 				}
 				this.expr = (testing + " " + operator + " (?)");

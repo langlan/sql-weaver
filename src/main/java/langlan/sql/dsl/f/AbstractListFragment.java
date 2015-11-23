@@ -63,7 +63,7 @@ public abstract class AbstractListFragment implements Fragment {
 
 	public String getName() {
 		String name = getClass().getSimpleName().replace("Fragment", "");
-		name = name.replaceAll("[a-z][A-Z]", " $0");
+		name = name.replaceAll("([A-Z])", " $0").substring(1);
 		return name;
 	}
 

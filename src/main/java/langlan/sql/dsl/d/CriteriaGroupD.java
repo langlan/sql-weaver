@@ -143,13 +143,13 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 				Criteria c = it.next();
 				c = criteriaStrategy.apply(c);
 				if (c != null) {
+					if (!appliedCriterias.isEmpty()) {
+						sb.append(orMode ? " Or " : " And ");
+					}
 					appliedCriterias.add(c);
 					String expr = c.toString();
 					sb.append(expr);
 					vars.addAll(Arrays.asList(c.vars()));
-					if (it.hasNext()) {
-						sb.append(orMode ? " Or " : " And ");
-					}
 				}
 			}
 		}

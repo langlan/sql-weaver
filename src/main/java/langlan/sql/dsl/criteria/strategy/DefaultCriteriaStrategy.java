@@ -33,12 +33,7 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 	}
 
 	public Criteria applyCriteria(BinaryComparison criteria) {
-		boolean empty = Variables.isEmpty(criteria.getBoundValue());
-		if (empty && "IN".equalsIgnoreCase(criteria.getOperator())) {
-			return new Custom("1=0");
-		} else {
-			return !empty ? criteria : null;
-		}
+		return !Variables.isEmpty(criteria.getBoundValue()) ? criteria : null;
 	}
 
 	public Criteria applyCriteria(Between criteria) {
