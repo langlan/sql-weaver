@@ -44,7 +44,7 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 		} else if (leftApply) {
 			return new BinaryComparison(criteria.getTesting(), ">=", criteria.getLeftBoundValue());
 		} else if (rightApply) {
-			return new BinaryComparison(criteria.getTesting(), "<=", criteria.getLeftBoundValue());
+			return new BinaryComparison(criteria.getTesting(), "<=", criteria.getRightBoundValue());
 		} else {
 			return null;
 		}
