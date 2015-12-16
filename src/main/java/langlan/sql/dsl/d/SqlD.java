@@ -24,7 +24,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 	/**
 	 * Append costum fragment to the sql.
 	 */
-	public T _(String fragment, Object... bindVariables) {
+	public T __(String fragment, Object... bindVariables) {
 		return addFragment(new CustomFragment(fragment, bindVariables));
 	}
 
@@ -35,7 +35,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 	 *
 	 * @throws SqlSyntaxException if the invoke-position is not allowed.
 	 */
-	public T _item(String fragment, Object... bindVariables) throws SqlSyntaxException {
+	public T ____(String fragment, Object... bindVariables) throws SqlSyntaxException {
 		return addFragment(new ItemFragment(fragment, bindVariables));
 	}
 

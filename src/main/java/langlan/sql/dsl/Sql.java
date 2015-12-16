@@ -16,7 +16,7 @@ import langlan.sql.dsl.i.VariablesBound;
  * .select("a.*"[, var1, var2...]).from("A a")
  * <span style="color:blue;font-weight: bold;">|</span>
  * [.select([...])[.$(condition)]]<span style="color:blue;">* -> 1 applied</span>
- *   [._item(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
+ *   [.____(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
  * [.from("...")[.$(condition)]]<span style="color:blue;">* -> 1 applied</span>
  * <span style="color:blue;font-weight: bold;">)</span>
  * [.[leftJoin|rightJoin|fullJoin|join|crossJoin]("...")[$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
@@ -31,7 +31,7 @@ import langlan.sql.dsl.i.VariablesBound;
  *   [.notLike("a.name", var)[.$(condition)]]
  *   [.in("a.name", vars)[.$(condition)]]
  *   [.notIn("a.name", vars)[.$(condition)]]
- *   [._("a.name", vars)[.$(condition)]]
+ *   [.__("a.name", vars)[.$(condition)]]
  *   [.grp([boolean])...endGrp()[.$(condition)]]
  *   [.exists().select("1").from("B b")
  *     ...
@@ -46,9 +46,9 @@ import langlan.sql.dsl.i.VariablesBound;
  *  .endWhere()
  * ]
  * [.orderBy("...")[.$(condition)]]<span style="color:blue;">* -> 1 or 0 applied</span>
- *   [._item(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
+ *   [.____(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
  * [.groupBy("...")[.$(condition)]]<span style="color:blue;">* -> 1 or 0 applied</span>
- *   [._item(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
+ *   [.____(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
  * [.endSql()];
  * return dao.find(sql.toString(), sql.vals());
  * </pre>

@@ -28,7 +28,7 @@ import java.util.*;
  * <li> {@link #between(String, Object, Object)}</li>
  * <li> {@link #in(String, Object)}, {@link #notIn(String, Object)}</li>
  * <li> {@link #isNull(String)}, {@link #isNotNull(String)}</li>
- * <li> {@link #_(String, Object...)}</li>
+ * <li> {@link #__(String, Object...)}</li>
  * </ul>
  * </li>
  * <li>Sub CriteriaGroup
@@ -94,13 +94,13 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 * <pre>
 	 * new Sql()....from("X x")
 	 * .where()
-	 * 	._("x.a=1")
-	 * 	._("(x.b=? Or x.c=?)",obj,obj2)
-	 * 	._("Not Exists(select 1 from Y y Where y.a=2 And y.id=x.id)
+	 * 	.__("x.a=1")
+	 * 	.__("(x.b=? Or x.c=?)",obj,obj2)
+	 * 	.__("Not Exists(select 1 from Y y Where y.a=2 And y.id=x.id)
 	 * ...
 	 * </pre>
 	 */
-	public T _(String exp, Object... bindVariables) {
+	public T __(String exp, Object... bindVariables) {
 		return addCriteria(new Custom(exp, bindVariables));
 	}
 
@@ -138,9 +138,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		List<Object> vars = new LinkedList<Object>();
 		if (!$isSelfInvalid()) {
 			CriteriaStrategy criteriaStrategy = getCriteraiaStrategy();
-			Iterator<Criteria> it = criterias.iterator();
-			while (it.hasNext()) {
-				Criteria c = it.next();
+			for (Criteria c : criterias) {
 				c = criteriaStrategy.apply(c);
 				if (c != null) {
 					if (!appliedCriterias.isEmpty()) {

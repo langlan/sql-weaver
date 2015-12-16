@@ -69,10 +69,10 @@ public class SqlTest {
 		sql = new Sql().select("x.*").from("X x").where()//@fmt:off
 			.eq("x.a", "1")
 			.exists().select("1").from("Y y").where()
-				._("y.id=x.id")
+				.__("y.id=x.id")
 			.endWhere().endExists()
 			.notExists().select("1").from("Z z").where()
-				._("z.id=x.id")
+				.__("z.id=x.id")
 			.endWhere().endNotExists()
 		.endWhere();//@fmt:on
 		Assert.assertEquals(
@@ -84,7 +84,7 @@ public class SqlTest {
 			.exists().select("1").from("Y").endExists()
 			.subSql("x.id in").select("z.id").from("Z z").where()
 				.subSql("Exists").select("o.id").from("O o").where()
-					._("o.id=z.id")
+					.__("o.id=z.id")
 				.endWhere()	.endSubSql()
 			.endWhere().endSubSql()
 		.endWhere();//@fmt:on
@@ -101,12 +101,12 @@ public class SqlTest {
 		String expected = "Select a, b, c From X";
 		Sql sql = new Sql().select("a, b, c").from("X");
 		assertEquals(expected, sql.toString());
-		
+
 		// static items - item split
 		sql = new Sql().select()//@fmt:off
-			._item("a")
-			._item("b")
-			._item("c")
+		.____("a")
+		.____("b")
+		.____("c")
 		.from("X");//@fmt:on
 		assertEquals(expected, sql.toString());
 
@@ -118,58 +118,63 @@ public class SqlTest {
 		.from("X");//@fmt:on
 		assertEquals(expected, sql.toString());
 
-		// dynamic items - inline apply flag on _item()
+		// dynamic items - inline apply flag on ____()
 		Date now = new Date();
 		sql = new Sql().select()//@fmt:off
-			._item("a, b").$(false)
-			._item("c, d").$(true)
-			._item("e")
-			._item("? f", "Hello").$(false)
-			._item("? t", now).$(true)
-			._item("? w", "World")
+		.____("a, b").$(false)
+		.____("c, d").$(true)
+		.____("e")
+		.____("? f", "Hello").$(false)
+		.____("? t", now).$(true)
+		.____("? w", "World")
 		.from("X");//@fmt:on
 		assertEquals("Select c, d, e, ? t, ? w From X", sql.toString());
-		assertArrayEquals(new Object[] { now, "World" }, sql.vars());
+		assertArrayEquals(new Object[]{now, "World"}, sql.vars());
 
 		// NOTE:
 		// Only one select can applied, or SqlSyntaxException will be thrown.
-		// When using _item(), there must be one select() applied before them.
+		// When using ____(), there must be one select() applied before them.
 
 	}
 
 	@Test
 	public void testCustomFragment() {
 		Sql sql = new Sql()//@fmt:off
-		._("With a as (Select 1, ? From dual)", 2)
+		.__("With a as (Select 1, ? From dual)", 2)
 		.select("*").from("a");//@fmt:on
 		assertEquals("With a as (Select 1, ? From dual) Select * From a", sql.toString());
-		assertArrayEquals(new Integer[] { 2 }, sql.vars());
+		assertArrayEquals(new Integer[]{2}, sql.vars());
 	}
 
 	@Test
 	public void testJoin() {
-		Sql sql = new Sql().select("*").from("A a").leftJoin("B b On(a.id=b.id)").rightJoin("C c On(a.id=c.id)")
-				.fullJoin("D d On(a.id=d.id)").join("E e On(a.id=e.id)").crossJoin("F f");
-		assertEquals(
-				"Select * From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Full Join D d On(a.id=d.id) Join E e On(a.id=e.id) Cross Join F f",
-				sql.toString());
+		Sql sql = new Sql().select("*").from("A a") //@fmt:off
+			.leftJoin("B b On(a.id=b.id)")
+			.rightJoin("C c On(a.id=c.id)")
+			.fullJoin("D d On(a.id=d.id)").join("E e On(a.id=e.id)").crossJoin("F f"); //@fmt:on
 
-		boolean cJoind = true, dJoind = false, eJoined = false, fJoined = false;
+		assertEquals(
+			"Select * From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Full Join D d On(a.id=d.id) Join E e On(a.id=e.id) Cross Join F f",
+			sql.toString());
+
+		boolean[] flags = new boolean[]{true, false, false, false};//for cdef
 		sql = new Sql().select("a.*").from("A a")//@fmt:off
 			.leftJoin("B b On(a.id=b.id)")
-			.rightJoin("C c On(a.id=c.id)").$(cJoind)
-			.fullJoin("D d On(a.id=d.id)").$(dJoind)
-			.join("E e On(a.id=e.id)").$(eJoined)
-			.crossJoin("F f").$(fJoined)
+			.rightJoin("C c On(a.id=c.id)").$(flags[0])
+			.fullJoin("D d On(a.id=d.id)").$(flags[1])
+			.join("E e On(a.id=e.id)").$(flags[2])
+			.crossJoin("F f").$(flags[3])
 		.where()
 			.eq("b.x", 1)
-			.eq("c.x", "c").$(cJoind)
-			.eq("d.x", "d").$(dJoind)
-			.eq("e.x", "e").$(eJoined)
+			.eq("c.x", "c").$(flags[0])
+			.eq("d.x", "d").$(flags[1])
+			.eq("e.x", "e").$(flags[2])
 		.endWhere();//@fmt:on
 		assertEquals(
-				"Select a.* From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Where b.x=? And c.x=?",
-				sql.toString());
-		assertArrayEquals(new Object[] { 1, "c" }, sql.vars());
+			"Select a.* From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Where b.x=? And c.x=?",
+			sql.toString());
+		assertArrayEquals(new Object[]{1, "c"}, sql.vars());
 	}
+
+
 }
