@@ -1,17 +1,15 @@
 package langlan.sql.dsl.f;
 
 import langlan.sql.dsl.i.Fragment;
+import langlan.sql.dsl.i.Fragment.Ignorable;
 import langlan.sql.dsl.u.Variables;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-public abstract class AbstractListFragment implements Fragment {
+public abstract class AbstractListFragment implements Fragment, Ignorable {
 	//element is String or Fragment
 	protected List<Object> items = new LinkedList<Object>();
-	private Object[] vars = Variables.EMPTY_ARRAY;
+	private Object[] firstStringFragmentVars = Variables.EMPTY_ARRAY;
 
 	public AbstractListFragment(String... items) {
 		for (String item : items) {
@@ -19,14 +17,20 @@ public abstract class AbstractListFragment implements Fragment {
 		}
 	}
 
-	public AbstractListFragment(String items, Object[] bindVariables) {
-		this.pushItem(items);
-		this.vars = bindVariables;
+	public AbstractListFragment(String item, Object[] bindVariables) {
+		this.pushItem(item);
+		this.firstStringFragmentVars = bindVariables;
 	}
 
 	@Override
 	public void joinFragment(StringBuilder sb, List<Object> variables) {
-		variables.addAll(Arrays.asList(vars));
+		List<Object> items = getNonEmptyItems();
+		// Support ignoring empty-fragment.
+		if (items.size() == 0) {
+			return;
+		} else if (firstStringFragmentVars.length > 0) {
+			variables.addAll(Arrays.asList(firstStringFragmentVars));
+		}
 		sb.append(getName());
 		for (Iterator<Object> iterator = items.iterator(); iterator.hasNext(); ) {
 			Object item = iterator.next();
@@ -44,9 +48,7 @@ public abstract class AbstractListFragment implements Fragment {
 
 	// Do not make public
 	protected void pushItem(String item) {
-		//if (item != null && !item.trim().isEmpty()) {
 		items.add(item);
-		//}
 	}
 
 	public void pushItem(Fragment item) {
@@ -69,5 +71,25 @@ public abstract class AbstractListFragment implements Fragment {
 
 	public boolean hasItem() {
 		return !items.isEmpty();
+	}
+
+	protected List<Object> getNonEmptyItems() {
+		List<Object> nonEmptyItems = null;
+		for (Object item : items) {
+			if (item == null
+				|| item instanceof String && ((String) item).isEmpty()
+				|| (item instanceof Ignorable && ((Ignorable) item).isEmpty())) {
+				continue;
+			} else if (nonEmptyItems == null) {
+				nonEmptyItems = new LinkedList<Object>();
+			}
+			nonEmptyItems.add(item);
+		}
+		return nonEmptyItems != null ? nonEmptyItems : Collections.emptyList();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return getNonEmptyItems().isEmpty();
 	}
 }

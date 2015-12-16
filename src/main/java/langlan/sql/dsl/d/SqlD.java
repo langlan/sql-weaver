@@ -4,6 +4,7 @@ import langlan.sql.dsl.e.SqlSyntaxException;
 import langlan.sql.dsl.f.*;
 import langlan.sql.dsl.i.CriteriaStrategyAware;
 import langlan.sql.dsl.i.Fragment;
+import langlan.sql.dsl.i.Fragment.Ignorable;
 import langlan.sql.dsl.i.VariablesBound;
 
 import java.util.Collections;
@@ -168,7 +169,9 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 			LinkedList<Object> variables = new LinkedList<Object>();
 			while (it.hasNext()) {
 				Fragment fragment = it.next();
-				if (sb.length() > 0) {
+				if (fragment instanceof Ignorable && ((Ignorable) fragment).isEmpty()) {
+					continue;
+				}else if (sb.length() > 0) {
 					sb.append(" ");
 				}
 				fragment.joinFragment(sb, variables);

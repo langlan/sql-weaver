@@ -1,11 +1,12 @@
 package langlan.sql.dsl.f;
 
 import langlan.sql.dsl.i.Fragment;
+import langlan.sql.dsl.i.Fragment.Ignorable;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class CustomFragment implements Fragment {
+public class CustomFragment implements Fragment, Ignorable {
 	String fragment;
 	Object[] vars;
 
@@ -22,6 +23,11 @@ public class CustomFragment implements Fragment {
 
 	@Override
 	public void validateFragmentPosition(List<Fragment> fragments) {
-		
+
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return fragment == null || fragment.isEmpty();
 	}
 }

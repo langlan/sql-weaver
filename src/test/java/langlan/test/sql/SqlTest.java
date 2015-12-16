@@ -176,5 +176,33 @@ public class SqlTest {
 		assertArrayEquals(new Object[]{1, "c"}, sql.vars());
 	}
 
+	@Test
+	public void testOrderBy() {
+		Sql sql = new Sql().select("*").from("A a").orderBy("id desc");
+		assertEquals("Select * From A a Order By id desc", sql.toString());
 
+		sql = new Sql().select("*").from("A a") //@fmt:off
+			.orderBy("")
+			.____("i")
+			.____("")
+			.____("j").$(1>2)
+			.____("k")
+		;//@fmt:on
+		assertEquals("Select * From A a Order By i, k", sql.toString());
+
+		sql = new Sql().select("*").from("A a") //@fmt:off
+			.orderBy("")
+			.____("i").$(1>2)
+			.____("")
+			.____("j").$(1>2)
+			.____("k").$(1>2)
+		;//@fmt:on
+		assertEquals("Select * From A a", sql.toString());
+	}
+
+	@Test
+	public void testGroupBy() {
+		Sql sql = new Sql().select("*").from("A a").groupBy("i");
+		assertEquals("Select * From A a Group By i", sql.toString());
+	}
 }

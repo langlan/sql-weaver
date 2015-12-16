@@ -354,7 +354,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 *
 	 * <pre>
 	 * ...
-	 * .sub("id In") //[xxx Not In] or [Exists] or [Not Exists]
+	 * .subSql("id In") //[xxx Not In] or [Exists] or [Not Exists]
 	 * 	.select(***)
 	 * 	.from(***)
 	 * 	.where()....endWhere()
