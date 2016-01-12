@@ -41,7 +41,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 	}
 
 	@Override
-	public T $(boolean b) {
+	public T $(Boolean b) {
 		assertNotEnded();
 		// if (getBranch().isEntered()) {
 		return super.$(b);

@@ -71,11 +71,12 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	/**
 	 * Inline apply strategy of a signle criteria.
 	 *
-	 * @param apply Inline-Apply-Flag indicates whether previous criteria should be applied.
+	 * @param apply Inline-Apply-Flag indicates whether previous criteria should be applied. <code>null</code> will be
+	 *              treated as <code>false</code>.
 	 * @throws SqlSyntaxException If this method is not invoked immediate following a criteria-about method or invoked
 	 *                            repeatedly.
 	 */
-	public T $(boolean apply) throws SqlSyntaxException {
+	public T $(Boolean apply) throws SqlSyntaxException {
 		assertNotEnded();
 		//if (getBranch().isEntered()) {
 		return super.$(apply);

@@ -66,7 +66,7 @@ import langlan.sql.dsl.i.VariablesBound;
  * </code></li>
  * </ul>
  * About [fragment/criteria apply strategy] see {@link #setCriteriaStrategy(CriteriaStrategy)} and {@link
- * InlineStrategySupport#$(boolean)}
+ * InlineStrategySupport#$(Boolean)}
  *
  * @see CriteriaGroupD
  * @see VariablesBound
@@ -76,7 +76,7 @@ public class Sql extends SqlD<Sql> {
 	private CriteriaStrategy criteriaStrategy = DefaultCriteriaStrategy.INSTANCE;
 
 	@Override
-	public Sql $(boolean b) {
+	public Sql $(Boolean b) {
 		Sql ret = super.$(b);
 		if ($isSelfInvalid()) {
 			throw new SqlSyntaxException("Cannot Make the TOP-LEVEL-SQL Invalid!");
@@ -94,7 +94,7 @@ public class Sql extends SqlD<Sql> {
 
 	/**
 	 * End the Sql EXPLICITLY.<br/>
-	 * After this action, Sql instance can not be add or remove(by {@link #$(boolean)}) any Fragment, neither
+	 * After this action, Sql instance can not be add or remove(by {@link #$(Boolean)}) any Fragment, neither
 	 * EXPLICITLY-End it again.
 	 */
 	@Override
