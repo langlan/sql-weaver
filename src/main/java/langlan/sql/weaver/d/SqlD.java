@@ -114,7 +114,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 		return addFragment(new JoinFragment(JoinFragment.FULL, expr));
 	}
 
-	/** Add a (Inner)-Join Clause */
+	/** Add a (Inner-)Join Clause */
 	public T join(String expr) {
 		return addFragment(new JoinFragment(JoinFragment.INNER, expr));
 	}

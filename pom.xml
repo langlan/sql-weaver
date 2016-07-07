@@ -1,10 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>langlan</groupId>
-	<artifactId>sql-weaver</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<name>sql-weaver</name>
+	<groupId>com.github.langlan</groupId>
+	<artifactId>langlan-sql-weaver</artifactId>
+	<version>1.0</version>
 	<description>Concatenating Sql fragments(and organizing Bind-Variables) dynamically by strategies.</description>
+	<url>https://github.com/langlan/sql-weaver</url>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,6 +20,21 @@
 		<version.test.junit>4.12</version.test.junit>
 	</properties>
 
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<scm>
+		<url>git@github.com:langlan/sql-weaver</url>
+	</scm>
+	<developers>
+		<developer>
+			<name>langlan</name>
+			<email>langlan4744@gmail.com</email>
+		</developer>
+	</developers>
 
 	<dependencies>
 		<dependency>
@@ -62,6 +79,44 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Javadoc -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- GPG -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>oss</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>oss</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>

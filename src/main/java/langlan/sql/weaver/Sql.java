@@ -20,7 +20,8 @@ import langlan.sql.weaver.i.VariablesBound;
  * [.from("...")[.$(condition)]]<span style="color:blue;">* -> 1 applied</span>
  * <span style="color:blue;font-weight: bold;">)</span>
  * [.[leftJoin|rightJoin|fullJoin|join|crossJoin]("...")[$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
- * [.where()
+ * [
+ * .where()
  *   [.eq("a.name", var)[.$(condition)]]
  *   [.gt("a.age", var)[.$(condition)]]
  *   [.ge("a.age", var)[.$(condition)]]
