@@ -25,9 +25,9 @@ public class SubCriteriaGroup<O extends CriteriaGroupD<?, ?>> extends CriteriaGr
 
 	@Override
 	public String toString() {
-		if (getAppliedCriterias().isEmpty()) {
+		if (getAppliedCriteria().isEmpty()) {
 			return "";
-		} else if (size() > 1) {
+		} else if (getAppliedCriteria().size() > 1) {
 			return "(" + super.toString() + ")";
 		} else {
 			return super.toString();

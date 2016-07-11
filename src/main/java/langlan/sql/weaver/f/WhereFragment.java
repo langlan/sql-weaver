@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @param <OSQL> The Owner : a Sql or a SubSql scope.
  */
-public class WhereFragment<OSQL extends SqlD<OSQL>> extends CriteriaGroupD<WhereFragment<OSQL>, OSQL> implements Fragment {
+public class WhereFragment<OSQL extends SqlD<OSQL>> extends CriteriaGroupD<WhereFragment<OSQL>, OSQL> implements Fragment, Fragment.Ignorable {
 
 	public WhereFragment(OSQL owner, boolean orMode) {
 		super(owner, orMode);
@@ -28,7 +28,7 @@ public class WhereFragment<OSQL extends SqlD<OSQL>> extends CriteriaGroupD<Where
 
 	@Override
 	public void joinFragment(StringBuilder sb, List<Object> variables) {
-		if (!this.getAppliedCriterias().isEmpty()) {
+		if (!isEmpty()) {
 			sb.append("Where");
 			sb.append(" ");
 			sb.append(toString());
@@ -40,5 +40,10 @@ public class WhereFragment<OSQL extends SqlD<OSQL>> extends CriteriaGroupD<Where
 	public void validateFragmentPosition(List<Fragment> fragments) {
 		FragmentsValidator.assertExistsAndNotEmpty(fragments, FromFragment.class);
 		// FragmentsValidator.assertNotExists(fragments, getClass());
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return getAppliedCriteria().isEmpty();
 	}
 }

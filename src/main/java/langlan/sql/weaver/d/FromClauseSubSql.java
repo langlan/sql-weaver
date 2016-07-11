@@ -4,7 +4,7 @@ import langlan.sql.weaver.e.SqlSyntaxException;
 import langlan.sql.weaver.i.Criteria;
 
 /**
- * Used in a 'FROM' cluase.
+ * Used in a 'FROM' clause.
  *
  * @param <O> the type of the owner
  */

@@ -23,15 +23,15 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 	private boolean endedExplicitly;
 
 	/**
-	 * Append costum fragment to the weaver.
+	 * Append custom fragment to the weaver.
 	 */
 	public T __(String fragment, Object... bindVariables) {
 		return addFragment(new CustomFragment(fragment, bindVariables));
 	}
 
 	/**
-	 * Append costum item-fragment to the previous cluase of the weaver.<br/>
-	 * The previous cluase could be ('Select'|'From'|'Order by'|'Group By'). <br/>
+	 * Append custom item-fragment to the previous clause of the weaver.<br/>
+	 * The previous clause could be ('Select'|'From'|'Order by'|'Group By'). <br/>
 	 * NOTE: DO NOT ADD Delimiter!
 	 *
 	 * @throws SqlSyntaxException if the invoke-position is not allowed.
@@ -126,7 +126,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 
 
 	/**
-	 * @return a {@link WhereFragment} whose orMode is fasle(And Mode).。
+	 * @return a {@link WhereFragment} whose orMode is false(And Mode).。
 	 * @see #where(boolean)
 	 */
 	public WhereFragment<T> where() {
@@ -134,7 +134,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 	}
 
 	/**
-	 * @param or whether the CiriteriaGroup is 'OR' Mode or 'AND' Mode.
+	 * @param or whether the CriteriaGroup is 'OR' Mode or 'AND' Mode.
 	 * @return a {@link WhereFragment} whose orMode is param <code>or</code>.。
 	 */
 	public WhereFragment<T> where(boolean or) {

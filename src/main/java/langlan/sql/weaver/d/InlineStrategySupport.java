@@ -7,7 +7,7 @@ public abstract class InlineStrategySupport<T extends InlineStrategySupport<T>> 
 	private boolean $selfInvalid;
 
 	/**
-	 * Inline apply strategy of the weaver-fragment-append-method immediately followed by this method.
+	 * Inline apply strategy of the sql-fragment-append-method immediately followed by this method.
 	 *
 	 * @param apply Inline-Apply-Flag indicates whether previous fragment-append-method should be applied.
 	 *              <code>null</code> will be treated as <code>false</code>.

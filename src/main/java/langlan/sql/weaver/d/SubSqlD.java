@@ -26,7 +26,7 @@ public abstract class SubSqlD<T extends SubSqlD<T, O>, O extends CriteriaStrateg
 	}
 
 	@Override
-	public CriteriaStrategy getCriteraiaStrategy() {
-		return owner.getCriteraiaStrategy();
+	public CriteriaStrategy getCriteriaStrategy() {
+		return owner.getCriteriaStrategy();
 	}
 }

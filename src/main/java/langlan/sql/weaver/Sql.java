@@ -89,7 +89,7 @@ public class Sql extends SqlD<Sql> {
 		this.criteriaStrategy = criteriaStrategy;
 	}
 
-	public CriteriaStrategy getCriteraiaStrategy() {
+	public CriteriaStrategy getCriteriaStrategy() {
 		return criteriaStrategy;
 	}
 

@@ -12,14 +12,17 @@ import langlan.sql.weaver.i.CriteriaStrategyAware;
 import langlan.sql.weaver.i.VariablesBound;
 import langlan.sql.weaver.u.Variables;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 
 /**
- * Represents a group of criteria. Using toString() to get the weaver-fragment it represents. <br/>
+ * Represents a group of criteria. Using toString() to get the sql-fragment it represents. <br/>
  * <h1>Methods Summary</h1>
  * <ul>
  * <li> {@link #toString()} {@link #vars()}</li>
- * <li>Criterias Summary
+ * <li>Simple-Criteria Methods Summary
  * <ul>
  * <li> {@link #eq(String, Object)}, {@link #ne(String, Object)}</li>
  * <li> {@link #like(String, String)}, {@link #notLike(String, String)}</li>
@@ -31,12 +34,12 @@ import java.util.*;
  * <li> {@link #__(String, Object...)}</li>
  * </ul>
  * </li>
- * <li>Sub CriteriaGroup
+ * <li>Sub-CriteriaGroup Methods Summary
  * <ul>
  * <li> {@link #grp()}, {@link #grp(boolean)} | {@link SubCriteriaGroup#endGrp()}</li>
  * </ul>
  * </li>
- * <li>Sub Sql Summary
+ * <li>Sub-Sql Methods Summary
  * <ul>
  * <li> {@link #subSql(String)}, {@link SubSqlCriteria#endSubSql()}</li>
  * <li> {@link #exists()}, {@link ExistsSubSql#endExists()}</li>
@@ -53,11 +56,11 @@ import java.util.*;
 public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends CriteriaStrategyAware & VariablesBound>
 	extends InlineStrategySupport<T>
 	implements CriteriaStrategyAware, VariablesBound {
-	private Stack<Criteria> criterias = new Stack<Criteria>();
-	private List<Criteria> appliedCriterias = new LinkedList<Criteria>();
+	private Stack<Criteria> criteriaStack = new Stack<Criteria>();
+	private List<Criteria> appliedCriteria = new LinkedList<Criteria>();
 	/** false if is AndMode */
 	private boolean orMode;
-	/** Used for two purpose : 1. reutrning owner when end; 2. get owner's strategy */
+	/** Used for two purpose : 1. returning owner when end; 2. get owner's strategy */
 	private O owner;
 	/** the string representation */
 	private String generatedExpression;
@@ -69,7 +72,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	}
 
 	/**
-	 * Inline apply strategy of a signle criteria.
+	 * Inline apply strategy of a simple-criteria.
 	 *
 	 * @param apply Inline-Apply-Flag indicates whether previous criteria should be applied. <code>null</code> will be
 	 *              treated as <code>false</code>.
@@ -85,7 +88,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 
 	@Override
 	protected T $invalidLastItem() {
-		criterias.pop();
+		criteriaStack.pop();
 		return super.$invalidLastItem();
 	}
 
@@ -108,7 +111,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	protected T addCriteria(Criteria c) {
 		//if (getBranch().isEntered()) {
 		assertNotEnded();
-		criterias.push(c);
+		criteriaStack.push(c);
 		//}
 		return $setInvokable();
 	}
@@ -121,10 +124,6 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 
 	/**
 	 * Add a (Between) criteria
-	 *
-	 * @param exp
-	 * @param leftValue
-	 * @param rightValue
 	 */
 	public T between(String exp, Object leftValue, Object rightValue) {
 		Between criteria = new Between(exp, leftValue, rightValue);
@@ -138,14 +137,20 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		StringBuilder sb = new StringBuilder();
 		List<Object> vars = new LinkedList<Object>();
 		if (!$isSelfInvalid()) {
-			CriteriaStrategy criteriaStrategy = getCriteraiaStrategy();
-			for (Criteria c : criterias) {
+			CriteriaStrategy criteriaStrategy = getCriteriaStrategy();
+			for (Criteria c : criteriaStack) {
+				// transformed by strategy, chance to omit criteria (if null).
 				c = criteriaStrategy.apply(c);
+				// omit empty criteria group
+				if(c instanceof CriteriaGroupD && ((CriteriaGroupD<?, ?>) c).appliedCriteria.isEmpty()){
+					c = null;
+				}
+				// applied
 				if (c != null) {
-					if (!appliedCriterias.isEmpty()) {
+					if (!appliedCriteria.isEmpty()) {
 						sb.append(orMode ? " Or " : " And ");
 					}
-					appliedCriterias.add(c);
+					appliedCriteria.add(c);
 					String expr = c.toString();
 					sb.append(expr);
 					vars.addAll(Arrays.asList(c.vars()));
@@ -155,6 +160,10 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		this.generatedExpression = sb.toString();
 		this.vars = vars.toArray();
 		return owner;
+	}
+
+	protected List<Criteria> getAppliedCriteria(){
+		return appliedCriteria;
 	}
 
 	/** Add a Equal criteria */
@@ -195,13 +204,9 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return addCriteria(new BinaryComparison(exp, ">=", value));
 	}
 
-	public List<Criteria> getAppliedCriterias() {
-		return appliedCriterias;
-	}
-
 	@Override
-	public CriteriaStrategy getCriteraiaStrategy() {
-		return owner.getCriteraiaStrategy();
+	public CriteriaStrategy getCriteriaStrategy() {
+		return owner.getCriteriaStrategy();
 	}
 
 	/**
@@ -263,8 +268,11 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return ret;
 	}
 
-	/** Add a (IN) criteria */
-	public T in(String exp, Object values) {
+	/**
+	 * Add a (IN) criteria
+	 * @throws IllegalArgumentException if values is not an array or collection
+	 */
+	public T in(String exp, Object values) throws IllegalArgumentException {
 		return addCriteria(new BinaryComparison(exp, "In", values));
 	}
 
@@ -289,7 +297,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	}
 
 	/**
-	 * Add a (Like) criteria, diffence from {@link #like(String, String)}, this method will wrap bind-variale using
+	 * Add a (Like) criteria, different from {@link #like(String, String)}, this method will wrap bind-variable using
 	 * {@link Variables#wrap4Like(String, boolean, boolean)}
 	 */
 	public T like(String testing, String value, boolean fuzzLeft, boolean fuzzRight) {
@@ -304,6 +312,11 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	/** Add a (Not Equal) criteria */
 	public T ne(String exp, Object value) {
 		return addCriteria(new BinaryComparison(exp, "<>", value));
+	}
+
+	/** Add a (Not Between) criteria */
+	public T notBetween(String exp, Object leftValue, Object rightValue) {
+		return addCriteria(new Between(exp, leftValue, rightValue).negative());
 	}
 
 	/**
@@ -325,8 +338,11 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return ret;
 	}
 
-	/** Add a (NOT IN) criteria. */
-	public T notIn(String exp, Object values) {
+	/**
+	 * Add a (NOT IN) criteria.
+	 * @throws IllegalArgumentException if values is not an array or collection
+	 */
+	public T notIn(String exp, Object values) throws IllegalArgumentException{
 		return addCriteria(new BinaryComparison(exp, "In", values).negative());
 	}
 
@@ -336,18 +352,11 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	}
 
 	/**
-	 * Add a (NOT Like) criteria, diffence from {@link #notLike(String, String)}, this method will wrap bind-variale
+	 * Add a (NOT Like) criteria, different from {@link #notLike(String, String)}, this method will wrap bind-variable
 	 * using {@link Variables#wrap4Like(String, boolean, boolean)}
 	 */
 	public T notLike(String testing, String value, boolean fuzzLeft, boolean fuzzRight) {
 		return notLike(testing, Variables.wrap4Like(value, fuzzLeft, fuzzRight));
-	}
-
-	/**
-	 * @return num of citerias.
-	 */
-	public int size() {
-		return criterias.size();
 	}
 
 	/**

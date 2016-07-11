@@ -205,4 +205,28 @@ public class SqlTest {
 		Sql sql = new Sql().select("*").from("A a").groupBy("i");
 		assertEquals("Select * From A a Group By i", sql.toString());
 	}
+
+	static class Form{
+		public String a,b,c,d,e;
+	}
+	@Test
+	public void testForm() {
+		Form form = new Form();
+		Sql sql = buildSql(form);
+		assertEquals("Select i From x", sql.toString());
+	}
+
+	private Sql buildSql(Form form){
+		return new Sql().select("i").from("x").where()//@fmt:off
+			.eq("i.a", form.a)
+			.grp(true)
+				.eq("i.b", form.b)
+				.eq("i.c", form.c)
+				.grp()
+					.eq("i.d", form.d)
+					.eq("i.e", form.e)
+				.endGrp()
+			.endGrp()
+		.endWhere();//@fmt:on
+	}
 }

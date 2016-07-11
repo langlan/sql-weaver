@@ -21,14 +21,14 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 	}
 
 	public Criteria applyCriteria(SingleValueNegativeTesting criteria) {
-		AbstractSingleValueTestingCriteria interal = criteria.getInternal();
-		AbstractSingleValueTestingCriteria interalApplied = (AbstractSingleValueTestingCriteria) apply(interal);
-		if (interalApplied == null) {
+		AbstractSingleValueTestingCriteria internal = criteria.getInternal();
+		AbstractSingleValueTestingCriteria internalApplied = (AbstractSingleValueTestingCriteria) apply(internal);
+		if (internalApplied == null) {
 			return null;
-		} else if (interalApplied == interal) { // Not Transformed
+		} else if (internalApplied == internal) { // Not Transformed
 			return criteria;
 		} else { // Transformed
-			return interalApplied.negative();
+			return internalApplied.negative();
 		}
 	}
 
@@ -79,12 +79,12 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 						b = b && Criteria.class.isAssignableFrom(ptypes[0]);
 						if (b) {
 							@SuppressWarnings("unchecked")
-							Class<? extends Criteria> parmaterType = (Class<? extends Criteria>) ptypes[0];
-							Method strategyMethod = temp.get(parmaterType);
+							Class<? extends Criteria> parameterType = (Class<? extends Criteria>) ptypes[0];
+							Method strategyMethod = temp.get(parameterType);
 							if (strategyMethod == null) {
-								temp.put(parmaterType, m);
+								temp.put(parameterType, m);
 							} else if (strategyMethod.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
-								temp.put(parmaterType, m);// override.
+								temp.put(parameterType, m);// override.
 							}
 
 						}
