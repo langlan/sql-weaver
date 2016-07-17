@@ -1,7 +1,9 @@
 package langlan.sql.weaver.d;
 
+import langlan.sql.weaver.c.strategy.DefaultCriteriaStrategy;
 import langlan.sql.weaver.e.SqlSyntaxException;
 import langlan.sql.weaver.f.*;
+import langlan.sql.weaver.i.CriteriaStrategy;
 import langlan.sql.weaver.i.CriteriaStrategyAware;
 import langlan.sql.weaver.i.Fragment;
 import langlan.sql.weaver.i.Fragment.Ignorable;
@@ -21,6 +23,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 	private Object[] vars;
 	private LinkedList<Fragment> fragments;
 	private boolean endedExplicitly;
+	private CriteriaStrategy criteriaStrategy = DefaultCriteriaStrategy.INSTANCE;
 
 	/**
 	 * Append custom fragment to the weaver.
@@ -65,6 +68,7 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 		return super.$invalidLastItem();
 	}
 
+	/** assert not ended explicitly */
 	protected void assertNotEnded() {
 		if (endedExplicitly) {
 			throw new SqlSyntaxException("The Sql is ended!");
@@ -190,5 +194,18 @@ public abstract class SqlD<T extends SqlD<T>> extends InlineStrategySupport<T> i
 		endImplicitly();
 		endedExplicitly = true;
 		return realThis();
+	}
+
+	/**
+	 * Optional : Set a custom CriteriaStrategy.
+	 * @see DefaultCriteriaStrategy
+	 */
+	public T setCriteriaStrategy(CriteriaStrategy criteriaStrategy) {
+		this.criteriaStrategy = criteriaStrategy;
+		return realThis();
+	}
+
+	public CriteriaStrategy getCriteriaStrategy() {
+		return criteriaStrategy;
 	}
 }

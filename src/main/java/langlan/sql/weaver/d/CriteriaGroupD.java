@@ -25,10 +25,10 @@ import java.util.Stack;
  * <li>Simple-Criteria Methods Summary
  * <ul>
  * <li> {@link #eq(String, Object)}, {@link #ne(String, Object)}</li>
- * <li> {@link #like(String, String)}, {@link #notLike(String, String)}</li>
  * <li> {@link #gt(String, Object)}, {@link #ge(String, Object)}, {@link #lt(String, Object)},
  * {@link #le(String, Object)}</li>
- * <li> {@link #between(String, Object, Object)}</li>
+ * <li> {@link #like(String, String)}, {@link #notLike(String, String)}</li>
+ * <li> {@link #between(String, Object, Object)}, {@link #notBetween(String, Object, Object)}</li>
  * <li> {@link #in(String, Object)}, {@link #notIn(String, Object)}</li>
  * <li> {@link #isNull(String)}, {@link #isNotNull(String)}</li>
  * <li> {@link #__(String, Object...)}</li>
@@ -41,11 +41,11 @@ import java.util.Stack;
  * </li>
  * <li>Sub-Sql Methods Summary
  * <ul>
- * <li> {@link #subSql(String)}, {@link SubSqlCriteria#endSubSql()}</li>
- * <li> {@link #exists()}, {@link ExistsSubSql#endExists()}</li>
- * <li> {@link #notExists()}, {@link NotExistsSubSql#endNotExists()}</li>
- * <li> {@link #in(String)}, {@link InSubSql#endIn()}</li>
- * <li> {@link #notIn(String)}, {@link NotInSubSql#endNotIn()}</li>
+ * <li> {@link #subSql(String)} | {@link SubSqlCriteria#endSubSql()}</li>
+ * <li> {@link #exists()} | {@link ExistsSubSql#endExists()}</li>
+ * <li> {@link #notExists()} | {@link NotExistsSubSql#endNotExists()}</li>
+ * <li> {@link #in(String)} | {@link InSubSql#endIn()}</li>
+ * <li> {@link #notIn(String)} | {@link NotInSubSql#endNotIn()}</li>
  * </ul>
  * </li>
  * </ul>
@@ -108,6 +108,9 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return addCriteria(new Custom(exp, bindVariables));
 	}
 
+	/**
+	 * add criteria and return this.
+	 */
 	protected T addCriteria(Criteria c) {
 		//if (getBranch().isEntered()) {
 		assertNotEnded();
@@ -228,7 +231,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 * weaver.toString());
 	 * </pre>
 	 *
-	 * @return
+	 * @return a sub-criteria-group
 	 */
 	public SubCriteriaGroup<T> grp() {
 		return grp(false);

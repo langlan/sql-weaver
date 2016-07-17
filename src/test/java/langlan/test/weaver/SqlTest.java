@@ -1,6 +1,10 @@
 package langlan.test.weaver;
 
 import langlan.sql.weaver.Sql;
+import langlan.sql.weaver.c.Between;
+import langlan.sql.weaver.c.strategy.DefaultCriteriaStrategy;
+import langlan.sql.weaver.i.Criteria;
+import langlan.sql.weaver.u.Variables;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -206,9 +210,43 @@ public class SqlTest {
 		assertEquals("Select * From A a Group By i", sql.toString());
 	}
 
-	static class Form{
-		public String a,b,c,d,e;
+	@Test
+	public void testNot() {
+		Sql sql = new Sql().select("*").from("A a").where() //@fmt:off
+			.notBetween("a.id", 1, 100)
+			.notIn("a.id", new int[]{ 103, 106})
+			.notLike("a.name", "b%c")
+			.notLike("a.name", "ab", true, true)
+			.isNotNull("a.cert")
+		.endWhere(); //@fmt:on
+		String result = "Select * From A a Where a.id Not Between ? And ? And a.id Not In (?) And a.name Not Like ? And a.name Not Like ? And a.cert Is Not Null";
+		assertEquals(result, sql.toString());
 	}
+
+	@Test
+	public void testCriteriaOfSingleValueTesting() {
+		Sql sql = new Sql().select("*").from("T t").where() //@fmt:off
+			.eq("a", 1)
+			.gt("b", 1)
+			.lt("c", 1)
+			.ge("d", 1)
+			.le("e", 1)
+			.ne("f", 1)
+			.in("g", new int[]{ 103, 106})
+			.like("h", "ttt")
+			.like("h2", "ttt", true, true)
+			.isNull("i")
+			.between("j", 1, 100)
+		.endWhere(); //@fmt:on
+		String result = "Select * From T t Where a=? And b>? And c<? And d>=? And e<=? And f<>? And g In (?) And h Like ? And h2 Like ? And i Is Null And j Between ? And ?";
+		assertEquals(result, sql.toString());
+	}
+
+	static class Form {
+		public String a, b, c, d, e;
+	}
+
+	/** Bug-1.0: If nested-criteria-group not applied, still get non-empty Where/SubCriteriaGroup fragments. */
 	@Test
 	public void testForm() {
 		Form form = new Form();
@@ -216,7 +254,7 @@ public class SqlTest {
 		assertEquals("Select i From x", sql.toString());
 	}
 
-	private Sql buildSql(Form form){
+	private Sql buildSql(Form form) {
 		return new Sql().select("i").from("x").where()//@fmt:off
 			.eq("i.a", form.a)
 			.grp(true)
@@ -228,5 +266,27 @@ public class SqlTest {
 				.endGrp()
 			.endGrp()
 		.endWhere();//@fmt:on
+	}
+
+	@Test
+	public void testSetCriteriaStrategy() {
+		Sql sql = new Sql().select("*").from("T t").where()//fmt:off
+			.between("a", 1, null)
+			.endWhere();//@fmt:on
+		assertEquals("Select * From T t Where a>=?", sql.toString());
+
+		sql = new Sql().setCriteriaStrategy(new DefaultCriteriaStrategy() {
+			@Override
+			public Criteria applyCriteria(Between c) {
+				if(Variables.isEmpty(c.getLeftBoundValue()) || Variables.isEmpty(c.getRightBoundValue())){
+					return null;
+				}else{
+					return c;
+				}
+			}
+		}).select("*").from("T t").where()//fmt:off
+			.between("a", 1, null)
+			.endWhere();//@fmt:on
+		assertEquals("Select * From T t", sql.toString());
 	}
 }

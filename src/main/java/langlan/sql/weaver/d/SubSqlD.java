@@ -4,7 +4,7 @@ import langlan.sql.weaver.i.CriteriaStrategy;
 import langlan.sql.weaver.i.CriteriaStrategyAware;
 
 /**
- * Used by sub-weaver-query in a criteria-group
+ * Used by sub-sql-query in a criteria-group
  *
  * @param <O> the type of the owner
  */

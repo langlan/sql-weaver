@@ -2,8 +2,7 @@ package langlan.sql.weaver.c;
 
 public class Between extends AbstractSingleValueTestingCriteria {
 	public Between(String testing, Object left, Object right) {
-		this.testing = testing;
-		this.expr = testing + " Between ? And ?";
+		super(testing);
 		this.vars = new Object[] { left, right };
 	}
 
@@ -15,4 +14,8 @@ public class Between extends AbstractSingleValueTestingCriteria {
 		return vars[1];
 	}
 
+	@Override
+	protected void calcExpression() {
+		this.expr = getTesting() + (isNegative() ? " Not Between ? And ?" : " Between ? And ?");
+	}
 }

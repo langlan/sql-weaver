@@ -20,7 +20,7 @@ public class Variables {
 
 	/**
 	 * Simply return <code>var</code> if <code>var</code> is empty or contains '%' or fuzz-parameters are both false.
-	 * Otherwise 'change' it by adding character '%' on left or rihgt or both regarding fuzz-parameters, and return the
+	 * Otherwise 'change' it by adding character '%' on left or right or both regarding fuzz-parameters, and return the
 	 * result.
 	 */
 	public static String wrap4Like(String var, boolean fuzzLeft, boolean fuzzRight) {

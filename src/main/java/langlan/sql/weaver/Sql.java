@@ -1,6 +1,5 @@
 package langlan.sql.weaver;
 
-import langlan.sql.weaver.c.strategy.DefaultCriteriaStrategy;
 import langlan.sql.weaver.d.CriteriaGroupD;
 import langlan.sql.weaver.d.InlineStrategySupport;
 import langlan.sql.weaver.d.SqlD;
@@ -15,25 +14,25 @@ import langlan.sql.weaver.i.VariablesBound;
  * <span style="color:blue;font-weight: bold;">(</span>
  * .select("a.*"[, var1, var2...]).from("A a")
  * <span style="color:blue;font-weight: bold;">|</span>
- * [.select([...])[.$(condition)]]<span style="color:blue;">* -> 1 applied</span>
- *   [.____(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
- * [.from("...")[.$(condition)]]<span style="color:blue;">* -> 1 applied</span>
+ * [.select([...])<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;">* -> 1 applied</span>
+ *   [.____(item, [, var1, var2...])<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;font-weight: bold;">*</span>
+ * [.from("...")<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;">* -> 1 applied</span>
  * <span style="color:blue;font-weight: bold;">)</span>
  * [.[leftJoin|rightJoin|fullJoin|join|crossJoin]("...")[$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
  * [
  * .where()
- *   [.eq("a.name", var)[.$(condition)]]
- *   [.gt("a.age", var)[.$(condition)]]
- *   [.ge("a.age", var)[.$(condition)]]
- *   [.lt("a.age", var)[.$(condition)]]
- *   [.le("a.age", var)[.$(condition)]]
- *   [.btween("a.age", var, var)[.$(condition)]]
- *   [.like("a.name", var)[.$(condition)]]
- *   [.notLike("a.name", var)[.$(condition)]]
- *   [.in("a.name", vars)[.$(condition)]]
- *   [.notIn("a.name", vars)[.$(condition)]]
- *   [.__("a.name", vars)[.$(condition)]]
- *   [.grp([boolean])...endGrp()[.$(condition)]]
+ *   [.eq("a.name", var)<span style="color:gray;"><span style="color:gray;">[.$(condition)]</span></span>]
+ *   [.gt("a.age", var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.ge("a.age", var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.lt("a.age", var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.le("a.age", var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.between("a.age", var, var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.like("a.name", var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.notLike("a.name", var)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.in("a.name", vars)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.notIn("a.name", vars)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.__("a.name", vars)<span style="color:gray;">[.$(condition)]</span>]
+ *   [.grp([boolean])...endGrp()<span style="color:gray;">[.$(condition)]</span>]
  *   [.exists().select("1").from("B b")
  *     ...
  *   .endExists()[$(condition)]
@@ -42,16 +41,16 @@ import langlan.sql.weaver.i.VariablesBound;
  *     ...
  *   .endIn()[$(condition)]
  *   ]
- *   [.notExists()....endNotExists()[.$(condition)]]
- *   [.notIn("a.xxx")....endNotIn()[.$(condition)]]
+ *   [.notExists()....endNotExists()<span style="color:gray;">[.$(condition)]</span>]
+ *   [.notIn("a.xxx")....endNotIn()<span style="color:gray;">[.$(condition)]</span>]
  *  .endWhere()
  * ]
- * [.orderBy("...")[.$(condition)]]<span style="color:blue;">* -> 1 or 0 applied</span>
- *   [.____(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
- * [.groupBy("...")[.$(condition)]]<span style="color:blue;">* -> 1 or 0 applied</span>
- *   [.____(item, [, var1, var2...])[.$(condition)]]<span style="color:blue;font-weight: bold;">*</span>
+ * [.orderBy("...")<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;">* -> 1 or 0 applied</span>
+ *   [.____(item, [, var1, var2...])<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;font-weight: bold;">*</span>
+ * [.groupBy("...")<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;">* -> 1 or 0 applied</span>
+ *   [.____(item, [, var1, var2...])<span style="color:gray;">[.$(condition)]</span>]<span style="color:blue;font-weight: bold;">*</span>
  * [.endSql()];
- * return dao.find(weaver.toString(), weaver.vals());
+ * return dao.find(weaver.toString(), weaver.vars());
  * </pre>
  *
  * <b>NOTE</b> the following semantics of pairs of methods:
@@ -74,7 +73,6 @@ import langlan.sql.weaver.i.VariablesBound;
  * @see CriteriaStrategy
  */
 public class Sql extends SqlD<Sql> {
-	private CriteriaStrategy criteriaStrategy = DefaultCriteriaStrategy.INSTANCE;
 
 	@Override
 	public Sql $(Boolean b) {
@@ -85,16 +83,8 @@ public class Sql extends SqlD<Sql> {
 		return ret;
 	}
 
-	public void setCriteriaStrategy(CriteriaStrategy criteriaStrategy) {
-		this.criteriaStrategy = criteriaStrategy;
-	}
-
-	public CriteriaStrategy getCriteriaStrategy() {
-		return criteriaStrategy;
-	}
-
 	/**
-	 * End the Sql EXPLICITLY.<br/>
+	 * Optional : End the Sql EXPLICITLY.<br/>
 	 * After this action, Sql instance can not be add or remove(by {@link #$(Boolean)}) any Fragment, neither
 	 * EXPLICITLY-End it again.
 	 */

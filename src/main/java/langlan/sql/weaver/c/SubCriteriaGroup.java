@@ -4,11 +4,7 @@ import langlan.sql.weaver.d.CriteriaGroupD;
 import langlan.sql.weaver.i.Criteria;
 
 /**
- * 
- * @author langlan
- * 
- * @param <O>
- *            The owner (where came from to this Sub-Criteria-Group scope).
+ * @param <O> the type of the owner (where this Sub-Criteria-Group came from).
  */
 public class SubCriteriaGroup<O extends CriteriaGroupD<?, ?>> extends CriteriaGroupD<SubCriteriaGroup<O>, O> implements
 	Criteria {
@@ -25,9 +21,7 @@ public class SubCriteriaGroup<O extends CriteriaGroupD<?, ?>> extends CriteriaGr
 
 	@Override
 	public String toString() {
-		if (getAppliedCriteria().isEmpty()) {
-			return "";
-		} else if (getAppliedCriteria().size() > 1) {
+		if (getAppliedCriteria().size() > 1) { //quoted if multiple items.
 			return "(" + super.toString() + ")";
 		} else {
 			return super.toString();

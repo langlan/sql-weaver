@@ -36,14 +36,12 @@ public class DefaultCriteriaStrategyTest extends Assert {
 		Class<DefaultCriteriaStrategy> clazz = DefaultCriteriaStrategy.class;
 		assertEquals(clazz.getMethod("applyCriteria", IsNull.class), dcs.getStrategyMethod(IsNull.class));
 		assertEquals(clazz.getMethod("applyCriteria", Between.class), dcs.getStrategyMethod(Between.class));
-		assertEquals(clazz.getMethod("applyCriteria", SingleValueNegativeTesting.class), dcs.getStrategyMethod(SingleValueNegativeTesting.class));
 		assertEquals(clazz.getMethod("applyCriteria", BinaryComparison.class), dcs.getStrategyMethod(BinaryComparison.class));
 		assertEquals(clazz.getMethod("applyCriteria", Criteria.class), dcs.getStrategyMethod(Custom.class));
 
 		BinaryComparison eqEmpty = (new BinaryComparison("a", "=", ""));
 		BinaryComparison eqVal = (new BinaryComparison("a", "=", 1));
 		assertNull(dcs.applyCriteria(eqEmpty));
-		assertNull(dcs.applyCriteria(new SingleValueNegativeTesting(eqEmpty)));
 		assertSame(eqVal, dcs.applyCriteria(eqVal));
 
 		Between between = new Between("a", 1, 2);

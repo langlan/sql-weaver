@@ -1,6 +1,8 @@
 package langlan.sql.weaver.c.strategy;
 
-import langlan.sql.weaver.c.*;
+import langlan.sql.weaver.c.Between;
+import langlan.sql.weaver.c.BinaryComparison;
+import langlan.sql.weaver.c.IsNull;
 import langlan.sql.weaver.e.DevException;
 import langlan.sql.weaver.i.Criteria;
 import langlan.sql.weaver.i.CriteriaStrategy;
@@ -12,30 +14,28 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A default {@link CriteriaStrategy} implementation.
+ * <p>This class implements several methods each responsible for a specific Criteria class. Subclasses can define or
+ * override other <code><span style="font-weight: bold">public</span> Criteria applyCriteria(Criteria_Specific_Type)</code>
+ * methods to support custom logic.
+ * </p>
+ */
 public class DefaultCriteriaStrategy implements CriteriaStrategy {
 	public static final CriteriaStrategy INSTANCE = new DefaultCriteriaStrategy();
 	private Map<Class<?>, Method> cache;
 
+	/** default Strategy method */
 	public Criteria applyCriteria(Criteria criteria) {
 		return criteria;
 	}
 
-	public Criteria applyCriteria(SingleValueNegativeTesting criteria) {
-		AbstractSingleValueTestingCriteria internal = criteria.getInternal();
-		AbstractSingleValueTestingCriteria internalApplied = (AbstractSingleValueTestingCriteria) apply(internal);
-		if (internalApplied == null) {
-			return null;
-		} else if (internalApplied == internal) { // Not Transformed
-			return criteria;
-		} else { // Transformed
-			return internalApplied.negative();
-		}
-	}
-
+	/** Strategy method for {@link BinaryComparison} */
 	public Criteria applyCriteria(BinaryComparison criteria) {
 		return !Variables.isEmpty(criteria.getBoundValue()) ? criteria : null;
 	}
 
+	/** Strategy method for {@link Between} */
 	public Criteria applyCriteria(Between criteria) {
 		boolean leftApply = Variables.isNotEmpty(criteria.getLeftBoundValue());
 		boolean rightApply = Variables.isNotEmpty(criteria.getRightBoundValue());
@@ -50,13 +50,16 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 		}
 	}
 
+	/** Strategy method for {@link IsNull} */
 	public Criteria applyCriteria(IsNull criteria) {
 		return criteria;
 	}
 
+	/** Dispatcher of strategy methods */
 	public final Criteria apply(Criteria criteria) {
 		Class<? extends Criteria> clazz = criteria.getClass();
 		Method method = getStrategyMethod(clazz);
+		method.setAccessible(true);
 		try {
 			return (Criteria) method.invoke(this, criteria);
 		} catch (Exception e) {
@@ -64,6 +67,7 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 		}
 	}
 
+	/** lookup a method for a criteria type */
 	public final Method getStrategyMethod(Class<? extends Criteria> criteriaType) {
 		if (this.cache == null) { // load defined strategy methods
 			synchronized (this) {
