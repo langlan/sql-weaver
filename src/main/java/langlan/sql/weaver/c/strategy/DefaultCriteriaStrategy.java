@@ -16,30 +16,59 @@ import java.util.Map;
 
 /**
  * A default {@link CriteriaStrategy} implementation.
- * <p>This class implements several methods each responsible for a specific Criteria class. Subclasses can define or
- * override other <code><span style="font-weight: bold">public</span> Criteria applyCriteria(Criteria_Specific_Type)</code>
- * methods to support custom logic.
- * </p>
+ * <p>This class implements several methods each responsible for a specific Criteria class. Subclasses can override or
+ * define other <pre>
+ *     <code><span style="font-weight: bold">public</span> Criteria applyCriteria(Criteria_Specific_Type)</code>
+ * </pre>
+ * stategy-methods to support custom logic. <p>
+ * NOTE: stategy-method<ul>
+ * <li>returns null means/indicate  criteria should not apply</li>
+ * <li>returns original-criteria means/indicate criteria should apply straightforward</li>
+ * <li>returns other-not-null-criteria means/indicate should apply return criterial instead of the original</li>
+ * </ul>
+ *
+ * @see #applyCriteria(Between)
+ * @see #applyCriteria(BinaryComparison)
+ * @see #applyCriteria(IsNull)
+ * @see #applyCriteria(Criteria)
  */
 public class DefaultCriteriaStrategy implements CriteriaStrategy {
 	public static final CriteriaStrategy INSTANCE = new DefaultCriteriaStrategy();
 	private Map<Class<?>, Method> cache;
 
-	/** default Strategy method */
+	/** default Strategy method : this implementation just return original not matter what */
 	public Criteria applyCriteria(Criteria criteria) {
 		return criteria;
 	}
 
-	/** Strategy method for {@link BinaryComparison} */
+	/**
+	 * Strategy method for {@link BinaryComparison}
+	 * <ul>
+	 * <li>bound-value not empty: original</li>
+	 * <li>bound-value empty: null(not apply)</li>
+	 * </ul>
+	 */
 	public Criteria applyCriteria(BinaryComparison criteria) {
 		return !Variables.isEmpty(criteria.getBoundValue()) ? criteria : null;
 	}
 
-	/** Strategy method for {@link Between} */
+	/**
+	 * Strategy method for {@link Between}
+	 * <ul>
+	 * <li>both left, right not null and not equals: -> original </li>
+	 * <li>both left, right not null and equals: -> prop=left </li>
+	 * <li>only left not null: -> prop>=?(left) </li>
+	 * <li>only right not null: -> prop<=?(right) </li>
+	 * <li>both left, right null: -> null(not apply) </li>
+	 * </ul>
+	 */
 	public Criteria applyCriteria(Between criteria) {
 		boolean leftApply = Variables.isNotEmpty(criteria.getLeftBoundValue());
 		boolean rightApply = Variables.isNotEmpty(criteria.getRightBoundValue());
 		if (leftApply && rightApply) {
+			if (Variables.equals(criteria.getLeftBoundValue(), criteria.getRightBoundValue())) {
+				return new BinaryComparison(criteria.getTesting(), "=", criteria.getLeftBoundValue());
+			}
 			return criteria;
 		} else if (leftApply) {
 			return new BinaryComparison(criteria.getTesting(), ">=", criteria.getLeftBoundValue());

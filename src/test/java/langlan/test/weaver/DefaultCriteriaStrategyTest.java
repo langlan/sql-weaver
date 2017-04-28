@@ -46,7 +46,9 @@ public class DefaultCriteriaStrategyTest extends Assert {
 
 		Between between = new Between("a", 1, 2);
 		assertSame(between, dcs.applyCriteria(between));
-		assertTrue(dcs.applyCriteria(new Between("a", 1, null)) instanceof BinaryComparison);
+		assertEquals(dcs.applyCriteria(new Between("a", 1, 1)), new BinaryComparison("a", "=", 1));
+		assertEquals(dcs.applyCriteria(new Between("a", 1, null)), new BinaryComparison("a", ">=", 1));
+		assertEquals(dcs.applyCriteria(new Between("a", null, 1)), new BinaryComparison("a", "<=", 1));
 		assertNull(dcs.applyCriteria(new Between("a", null, null)));
 
 		IsNull isNull = new IsNull("a");

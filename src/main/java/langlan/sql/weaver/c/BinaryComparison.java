@@ -2,6 +2,7 @@ package langlan.sql.weaver.c;
 
 import langlan.sql.weaver.e.DevException;
 import langlan.sql.weaver.i.Criteria;
+import langlan.sql.weaver.u.Variables;
 
 import java.util.Collection;
 import java.util.regex.Matcher;
@@ -91,5 +92,16 @@ public class BinaryComparison extends AbstractSingleValueTestingCriteria {
 			default:
 				throw new DevException("Code not supposed to reach here!");
 		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		} else if (obj instanceof BinaryComparison) {
+			BinaryComparison other = (BinaryComparison) obj;
+			return getTesting().equals(other.getTesting()) && (isNegative() == other.isNegative()) && Variables.equals(getBoundValue(), other.getBoundValue());
+		}
+		return false;
 	}
 }

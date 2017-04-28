@@ -34,4 +34,14 @@ public class Variables {
 		}
 		return var;
 	}
+
+	/**
+	 * Returns true if the arguments are equal to each other and false otherwise. Consequently, if both arguments are
+	 * null, true is returned and if exactly one argument is null, false is returned. Otherwise, equality is determined
+	 * by using the equals method of the first argument.<br>
+	 * <b>NOTE:Using java7 logic.</b>
+	 */
+	public static boolean equals(Object a, Object b) {
+		return (a == b) || (a != null && a.equals(b));
+	}
 }
