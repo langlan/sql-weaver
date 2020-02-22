@@ -4,7 +4,7 @@
 	<name>sql-weaver</name>
 	<groupId>com.github.langlan</groupId>
 	<artifactId>langlan-sql-weaver</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2.0-SNAPSHOT</version>
 	<description>Concatenating Sql fragments(and organizing Bind-Variables) dynamically by strategies.</description>
 	<url>https://github.com/langlan/sql-weaver</url>
 	<packaging>jar</packaging>
@@ -16,8 +16,7 @@
 		<version.plugin.source>2.4</version.plugin.source>
 
 		<!--<version.commons-logging>1.1</version.commons-logging>
-		<version.log4j>1.2.14</version.log4j>-->
-		<version.test.junit>4.12</version.test.junit>
+		<version.log4j>1.2.14</version.log4j>-->		
 	</properties>
 
 	<licenses>
@@ -40,7 +39,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${version.test.junit}</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 

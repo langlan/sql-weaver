@@ -57,6 +57,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	extends InlineStrategySupport<T>
 	implements CriteriaStrategyAware, VariablesBound {
 	private Stack<Criteria> criteriaStack = new Stack<Criteria>();
+	/** Keep an applied criteria list for analyze purpose, e.g. if contains none.*/ 
 	private List<Criteria> appliedCriteria = new LinkedList<Criteria>();
 	/** false if is AndMode */
 	private boolean orMode;
@@ -81,9 +82,9 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 */
 	public T $(Boolean apply) throws SqlSyntaxException {
 		assertNotEnded();
-		//if (getBranch().isEntered()) {
+		// if (getBranch().isEntered()) {
 		return super.$(apply);
-		//}
+		// }
 	}
 
 	@Override
@@ -92,8 +93,12 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return super.$invalidLastItem();
 	}
 
+//	public T apply() {
+//		return realThis();
+//	}
+
 	/**
-	 * Add one custom criteria with some variables. ig:
+	 * Add one custom criteria with some variables. e.g.:
 	 *
 	 * <pre>
 	 * new Sql()....from("X x")
@@ -103,6 +108,8 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 * 	.__("Not Exists(select 1 from Y y Where y.a=2 And y.id=x.id)
 	 * ...
 	 * </pre>
+	 * 
+	 * When <code>exp</code> is null or empty, this method will take no effect.
 	 */
 	public T __(String exp, Object... bindVariables) {
 		return addCriteria(new Custom(exp, bindVariables));
@@ -112,10 +119,10 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 * add criteria and return this.
 	 */
 	protected T addCriteria(Criteria c) {
-		//if (getBranch().isEntered()) {
+		// if (getBranch().isEntered()) {
 		assertNotEnded();
 		criteriaStack.push(c);
-		//}
+		// }
 		return $setInvokable();
 	}
 
@@ -136,25 +143,29 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	/** Terminate this current group scope. */
 	protected O end() {
 		assertNotEnded();
-		//getBranch().validate();
+		// getBranch().validate();
 		StringBuilder sb = new StringBuilder();
 		List<Object> vars = new LinkedList<Object>();
 		if (!$isSelfInvalid()) {
 			CriteriaStrategy criteriaStrategy = getCriteriaStrategy();
 			for (Criteria c : criteriaStack) {
-				// transformed by strategy, chance to omit criteria (if null).
+				// transformed by strategy, chance to omit criteria (if null) or convert.
 				c = criteriaStrategy.apply(c);
 				// omit empty criteria group
-				if(c instanceof CriteriaGroupD && ((CriteriaGroupD<?, ?>) c).appliedCriteria.isEmpty()){
+				if (c instanceof CriteriaGroupD && ((CriteriaGroupD<?, ?>) c).appliedCriteria.isEmpty()) {
 					c = null;
 				}
 				// applied
 				if (c != null) {
-					if (!appliedCriteria.isEmpty()) {
+					String expr = c.toString();
+					// final chance to omit empty criteria. (in case criteria strategy did't check the expression)
+					if (expr == null || expr.isEmpty()) {
+						continue;
+					}
+					if (!appliedCriteria.isEmpty()) {// if the criteria is not first.
 						sb.append(orMode ? " Or " : " And ");
 					}
 					appliedCriteria.add(c);
-					String expr = c.toString();
 					sb.append(expr);
 					vars.addAll(Arrays.asList(c.vars()));
 				}
@@ -165,7 +176,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return owner;
 	}
 
-	protected List<Criteria> getAppliedCriteria(){
+	protected List<Criteria> getAppliedCriteria() {
 		return appliedCriteria;
 	}
 
@@ -180,18 +191,25 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 *
 	 * <pre>
 	 * String plainSql = &quot;Select x.* From X x Where x.a=? And Exists(Select 1 From Y)&quot;;
-	 * weaver = new Sql().select(&quot;x.*&quot;).from(&quot;X x&quot;).where()//@fmt:off
-	 *   .eq(&quot;x.a&quot;, &quot;1&quot;)
-	 *   .subSql(&quot;ExistsSubSql&quot;).select(&quot;1&quot;).from(&quot;Y&quot;)
-	 *   .endSubSql()
-	 * .endWhere();
+	 * Sql weaver = new Sql()
+	 *   .select(&quot;x.*&quot;)
+	 *   .from(&quot;X x&quot;)
+	 *   .where()//@formatter:off 
+	 *     .eq(&quot;x.a&quot;, &quot;1&quot;)
+	 *     .subSql(&quot;Exists&quot;)
+	 *       .select(&quot;1&quot;).from(&quot;Y&quot;) .endSubSql() 
+	 *   .endWhere();
 	 * Assert.assertEquals(plainSql, weaver.toString());
 	 *
-	 * weaver = new Sql().select(&quot;x.*&quot;).from(&quot;X x&quot;).where()
-	 *   .eq(&quot;x.a&quot;, &quot;1&quot;)
-	 *   .exists().select(&quot;1&quot;).from(&quot;Y&quot;)
-	 *   .endExists()
-	 * .endWhere();//@fmt:on
+	 * weaver = new Sql()
+	 *   .select(&quot;x.*&quot;)
+	 *   .from(&quot;X x&quot;)
+	 *   .where() 
+	 *     .eq(&quot;x.a&quot;, &quot;1&quot;)
+	 *     .exists()
+	 *       .select(&quot;1&quot;).from(&quot;Y&quot;) 
+	 *     .endExists() 
+	 *   .endWhere();
 	 * Assert.assertEquals(plainSql, weaver.toString());
 	 *
 	 * <pre>
@@ -216,19 +234,21 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 * Add a andMode group
 	 *
 	 * <pre>
-	 * weaver = new Sql().select(&quot;i&quot;).from(&quot;x&quot;).where()//@fmt:off
-	 *    .eq(&quot;i.a&quot;, &quot;1&quot;)
-	 *    .grp(true)
-	 *       .eq(&quot;i.b&quot;, &quot;2&quot;)
-	 *       .eq(&quot;i.c&quot;, &quot;3&quot;)
-	 *       .grp()
-	 *      	.eq(&quot;i.d&quot;, &quot;4&quot;)
-	 *      	.eq(&quot;i.e&quot;, &quot;5&quot;)
-	 *       .endGrp()
-	 *    .endGrp()
-	 * .endWhere();//@fmt:on
-	 * Assert.assertEquals(&quot;Select i From x Where i.a=? And (i.b=? Or i.c=? Or (i.d=? And i.e=?))&quot;,
-	 * weaver.toString());
+	 * Sql weaver = new Sql()
+	 *   .select(&quot;i&quot;)
+	 *   .from(&quot;x&quot;)
+	 *   .where()
+	 * 		.eq(&quot;i.a&quot;, &quot;1&quot;)
+	 *      .grp(true)
+	 *         .eq(&quot;i.b&quot;, &quot;2&quot;)
+	 *         .eq(&quot;i.c&quot;, &quot;3&quot;)
+	 *         .grp()
+	 *           .eq(&quot;i.d&quot;, &quot;4&quot;)
+	 *           .eq(&quot;i.e&quot;, &quot;5&quot;)
+	 *         .endGrp()
+	 * 		.endGrp()
+	 *   .endWhere();
+	 * Assert.assertEquals(&quot;Select i From x Where i.a=? And (i.b=? Or i.c=? Or (i.d=? And i.e=?))&quot;, weaver.toString());
 	 * </pre>
 	 *
 	 * @return a sub-criteria-group
@@ -241,13 +261,16 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 * Add a orMode group. e.g.
 	 *
 	 * <pre>
-	 * weaver = new Sql().select(&quot;i&quot;).from(&quot;x&quot;).where()//@fmt:off
-	 *   .eq(&quot;i.a&quot;, &quot;1&quot;)
-	 *   .grp(true)
-	 *     .eq(&quot;i.b&quot;, &quot;2&quot;)
-	 *     .eq(&quot;i.c&quot;, &quot;3&quot;)
-	 *   .endGrp()
-	 * .endWhere();//@fmt:on
+	 * weaver = new Sql() // @formatter:off
+	 *   .select(&quot;i&quot;)
+	 *   .from(&quot;x&quot;)
+	 *   .where()
+	 *     .eq(&quot;i.a&quot;, &quot;1&quot;)
+	 *     .grp(true)
+	 *       .eq(&quot;i.b&quot;, &quot;2&quot;)
+	 *       .eq(&quot;i.c&quot;, &quot;3&quot;)
+	 *     .endGrp()
+	 *   .endWhere();  // @formatter:on
 	 * Assert.assertEquals(&quot;Select i From x Where i.a=? And (i.b=? Or i.c=?)&quot;, weaver.toString());
 	 * </pre>
 	 */
@@ -273,6 +296,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 
 	/**
 	 * Add a (IN) criteria
+	 * 
 	 * @throws IllegalArgumentException if values is not an array or collection
 	 */
 	public T in(String exp, Object values) throws IllegalArgumentException {
@@ -343,9 +367,10 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 
 	/**
 	 * Add a (NOT IN) criteria.
+	 * 
 	 * @throws IllegalArgumentException if values is not an array or collection
 	 */
-	public T notIn(String exp, Object values) throws IllegalArgumentException{
+	public T notIn(String exp, Object values) throws IllegalArgumentException {
 		return addCriteria(new BinaryComparison(exp, "In", values).negative());
 	}
 

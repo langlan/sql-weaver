@@ -21,7 +21,7 @@ public class SubCriteriaGroup<O extends CriteriaGroupD<?, ?>> extends CriteriaGr
 
 	@Override
 	public String toString() {
-		if (getAppliedCriteria().size() > 1) { //quoted if multiple items.
+		if (!getAppliedCriteria().isEmpty()) { //quoted if multiple items.
 			return "(" + super.toString() + ")";
 		} else {
 			return super.toString();

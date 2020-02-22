@@ -21,31 +21,31 @@ public class SqlTest {
 		assertEquals("Select * From T", sql.toString());
 
 		// boundVariables
-		sql = new Sql().select("a, b").from("x").where()//@fmt:off
+		sql = new Sql().select("a, b").from("x").where()//@formatter:off
 			.eq("a", "1")
 			.like("b", "2")
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		assertEquals("Select a, b From x Where a=? And b Like ?", sql.toString());
-		assertArrayEquals(new String[]{"1", "2"}, sql.vars());
+		assertArrayEquals(new String[] { "1", "2" }, sql.vars());
 
 		// or
-		sql = new Sql().select("a, b").from("x").where(true)//@fmt:off
+		sql = new Sql().select("a, b").from("x").where(true)//@formatter:off
 			.eq("a", "1")
 			.like("b", "2")
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		assertEquals("Select a, b From x Where a=? Or b Like ?", sql.toString());
 
 		// grpOr, nested
-		sql = new Sql().select("i").from("x").where()//@fmt:off
+		sql = new Sql().select("i").from("x").where()//@formatter:off
 			.eq("i.a", "1")
 			.grp(true)
 				.eq("i.b", "2")
 				.eq("i.c", "3")
 			.endGrp()
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		Assert.assertEquals("Select i From x Where i.a=? And (i.b=? Or i.c=?)", sql.toString());
 
-		sql = new Sql().select("i").from("x").where()//@fmt:off
+		sql = new Sql().select("i").from("x").where()//@formatter:off
 			.eq("i.a", "1")
 			.grp(true)
 				.eq("i.b", "2")
@@ -55,22 +55,22 @@ public class SqlTest {
 					.eq("i.e", "5")
 				.endGrp()
 			.endGrp()
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		Assert.assertEquals("Select i From x Where i.a=? And (i.b=? Or i.c=? Or (i.d=? And i.e=?))", sql.toString());
 
 		// Exists
 		String plainSql = "Select x.* From X x Where x.a=? And Exists(Select 1 From Y)";
-		sql = new Sql().select("x.*").from("X x").where()//@fmt:off
+		sql = new Sql().select("x.*").from("X x").where()//@formatter:off
 			.eq("x.a", "1")
 			.subSql("Exists").select("1").from("Y").endSubSql()
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		Assert.assertEquals(plainSql, sql.toString());
 		sql = new Sql().select("x.*").from("X x").where().eq("x.a", "1").exists().select("1").from("Y").endExists()
-			.endWhere();
+				.endWhere();
 		Assert.assertEquals(plainSql, sql.toString());
 
 		// Not Exists And Custom
-		sql = new Sql().select("x.*").from("X x").where()//@fmt:off
+		sql = new Sql().select("x.*").from("X x").where()//@formatter:off
 			.eq("x.a", "1")
 			.exists().select("1").from("Y y").where()
 				.__("y.id=x.id")
@@ -78,12 +78,12 @@ public class SqlTest {
 			.notExists().select("1").from("Z z").where()
 				.__("z.id=x.id")
 			.endWhere().endNotExists()
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		Assert.assertEquals(
-			"Select x.* From X x Where x.a=? And Exists(Select 1 From Y y Where y.id=x.id) And Not Exists(Select 1 From Z z Where z.id=x.id)",
-			sql.toString());
+				"Select x.* From X x Where x.a=? And Exists(Select 1 From Y y Where y.id=x.id) And Not Exists(Select 1 From Z z Where z.id=x.id)",
+				sql.toString());
 
-		sql = new Sql().select("i").from("X x").where()//@fmt:off
+		sql = new Sql().select("i").from("X x").where()//@formatter:off
 			.eq("x.a", "1")
 			.exists().select("1").from("Y").endExists()
 			.subSql("x.id in").select("z.id").from("Z z").where()
@@ -91,10 +91,10 @@ public class SqlTest {
 					.__("o.id=z.id")
 				.endWhere()	.endSubSql()
 			.endWhere().endSubSql()
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		Assert.assertEquals(
-			"Select i From X x Where x.a=? And Exists(Select 1 From Y) And x.id in(Select z.id From Z z Where Exists(Select o.id From O o Where o.id=z.id))",
-			sql.toString());
+				"Select i From X x Where x.a=? And Exists(Select 1 From Y) And x.id in(Select z.id From Z z Where Exists(Select o.id From O o Where o.id=z.id))",
+				sql.toString());
 		// weaver = new Sql().select("i").from("x").where().eq("i.a",
 		// "1").sub("i.b in").select("j").from("y").where().endWhere()
 	}
@@ -107,33 +107,33 @@ public class SqlTest {
 		assertEquals(expected, sql.toString());
 
 		// static items - item split
-		sql = new Sql().select()//@fmt:off
+		sql = new Sql().select()//@formatter:off
 		.____("a")
 		.____("b")
 		.____("c")
-		.from("X");//@fmt:on
+		.from("X");//@formatter:on
 		assertEquals(expected, sql.toString());
 
 		// dynamic items - inline apply flag on select()
-		sql = new Sql()//@fmt:off
+		sql = new Sql()//@formatter:off
 		.select("*").$(false)
 		.select("a, b, c").$(true)
 		.select("x, y, ? as z", "Hello Variable").$(false)
-		.from("X");//@fmt:on
+		.from("X");//@formatter:on
 		assertEquals(expected, sql.toString());
 
 		// dynamic items - inline apply flag on ____()
 		Date now = new Date();
-		sql = new Sql().select()//@fmt:off
+		sql = new Sql().select()//@formatter:off
 		.____("a, b").$(false)
 		.____("c, d").$(true)
 		.____("e")
 		.____("? f", "Hello").$(false)
 		.____("? t", now).$(true)
 		.____("? w", "World")
-		.from("X");//@fmt:on
+		.from("X");//@formatter:on
 		assertEquals("Select c, d, e, ? t, ? w From X", sql.toString());
-		assertArrayEquals(new Object[]{now, "World"}, sql.vars());
+		assertArrayEquals(new Object[] { now, "World" }, sql.vars());
 
 		// NOTE:
 		// Only one select can applied, or SqlSyntaxException will be thrown.
@@ -143,26 +143,42 @@ public class SqlTest {
 
 	@Test
 	public void testCustomFragment() {
-		Sql sql = new Sql()//@fmt:off
-		.__("With a as (Select 1, ? From dual)", 2)
-		.select("*").from("a");//@fmt:on
+		Sql sql = new Sql()//@formatter:off
+		  .__("With a as (Select 1, ? From dual)", 2)
+		  .select("*").from("a");//@formatter:on
 		assertEquals("With a as (Select 1, ? From dual) Select * From a", sql.toString());
-		assertArrayEquals(new Integer[]{2}, sql.vars());
+		assertArrayEquals(new Integer[] { 2 }, sql.vars());
+	}
+
+	@Test
+	public void testCustomCriteria() {
+		Sql sql = new Sql()//@formatter:off				  
+				.select("*").from("a")
+				.where()
+					.__("a.name is null")
+					.__("a.flag like ?", "%t")
+					.__("", "not applied")
+					.__(null, "not applied")
+				.endWhere();
+			//@formatter:on
+
+		assertEquals("Select * From a Where a.name is null And a.flag like ?", sql.toString());
+		assertArrayEquals(new Object[] { "%t" }, sql.vars());
 	}
 
 	@Test
 	public void testJoin() {
-		Sql sql = new Sql().select("*").from("A a") //@fmt:off
+		Sql sql = new Sql().select("*").from("A a") //@formatter:off
 			.leftJoin("B b On(a.id=b.id)")
 			.rightJoin("C c On(a.id=c.id)")
-			.fullJoin("D d On(a.id=d.id)").join("E e On(a.id=e.id)").crossJoin("F f"); //@fmt:on
+			.fullJoin("D d On(a.id=d.id)").join("E e On(a.id=e.id)").crossJoin("F f"); //@formatter:on
 
 		assertEquals(
-			"Select * From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Full Join D d On(a.id=d.id) Join E e On(a.id=e.id) Cross Join F f",
-			sql.toString());
+				"Select * From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Full Join D d On(a.id=d.id) Join E e On(a.id=e.id) Cross Join F f",
+				sql.toString());
 
-		boolean[] flags = new boolean[]{true, false, false, false};//for cdef
-		sql = new Sql().select("a.*").from("A a")//@fmt:off
+		boolean[] flags = new boolean[] { true, false, false, false };// for cdef
+		sql = new Sql().select("a.*").from("A a")//@formatter:off
 			.leftJoin("B b On(a.id=b.id)")
 			.rightJoin("C c On(a.id=c.id)").$(flags[0])
 			.fullJoin("D d On(a.id=d.id)").$(flags[1])
@@ -173,11 +189,11 @@ public class SqlTest {
 			.eq("c.x", "c").$(flags[0])
 			.eq("d.x", "d").$(flags[1])
 			.eq("e.x", "e").$(flags[2])
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 		assertEquals(
-			"Select a.* From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Where b.x=? And c.x=?",
-			sql.toString());
-		assertArrayEquals(new Object[]{1, "c"}, sql.vars());
+				"Select a.* From A a Left Join B b On(a.id=b.id) Right Join C c On(a.id=c.id) Where b.x=? And c.x=?",
+				sql.toString());
+		assertArrayEquals(new Object[] { 1, "c" }, sql.vars());
 	}
 
 	@Test
@@ -185,22 +201,22 @@ public class SqlTest {
 		Sql sql = new Sql().select("*").from("A a").orderBy("id desc");
 		assertEquals("Select * From A a Order By id desc", sql.toString());
 
-		sql = new Sql().select("*").from("A a") //@fmt:off
+		sql = new Sql().select("*").from("A a") //@formatter:off
 			.orderBy("")
 			.____("i")
 			.____("")
 			.____("j").$(1>2)
 			.____("k")
-		;//@fmt:on
+		;//@formatter:on
 		assertEquals("Select * From A a Order By i, k", sql.toString());
 
-		sql = new Sql().select("*").from("A a") //@fmt:off
+		sql = new Sql().select("*").from("A a") //@formatter:off
 			.orderBy("")
 			.____("i").$(1>2)
 			.____("")
 			.____("j").$(1>2)
 			.____("k").$(1>2)
-		;//@fmt:on
+		;//@formatter:on
 		assertEquals("Select * From A a", sql.toString());
 	}
 
@@ -212,20 +228,20 @@ public class SqlTest {
 
 	@Test
 	public void testNot() {
-		Sql sql = new Sql().select("*").from("A a").where() //@fmt:off
+		Sql sql = new Sql().select("*").from("A a").where() //@formatter:off
 			.notBetween("a.id", 1, 100)
 			.notIn("a.id", new int[]{ 103, 106})
 			.notLike("a.name", "b%c")
 			.notLike("a.name", "ab", true, true)
 			.isNotNull("a.cert")
-		.endWhere(); //@fmt:on
+		.endWhere(); //@formatter:on
 		String result = "Select * From A a Where a.id Not Between ? And ? And a.id Not In (?) And a.name Not Like ? And a.name Not Like ? And a.cert Is Not Null";
 		assertEquals(result, sql.toString());
 	}
 
 	@Test
 	public void testCriteriaOfSingleValueTesting() {
-		Sql sql = new Sql().select("*").from("T t").where() //@fmt:off
+		Sql sql = new Sql().select("*").from("T t").where() //@formatter:off
 			.eq("a", 1)
 			.gt("b", 1)
 			.lt("c", 1)
@@ -237,7 +253,7 @@ public class SqlTest {
 			.like("h2", "ttt", true, true)
 			.isNull("i")
 			.between("j", 1, 100)
-		.endWhere(); //@fmt:on
+		.endWhere(); //@formatter:on
 		String result = "Select * From T t Where a=? And b>? And c<? And d>=? And e<=? And f<>? And g In (?) And h Like ? And h2 Like ? And i Is Null And j Between ? And ?";
 		assertEquals(result, sql.toString());
 	}
@@ -255,7 +271,7 @@ public class SqlTest {
 	}
 
 	private Sql buildSql(Form form) {
-		return new Sql().select("i").from("x").where()//@fmt:off
+		return new Sql().select("i").from("x").where()//@formatter:off
 			.eq("i.a", form.a)
 			.grp(true)
 				.eq("i.b", form.b)
@@ -265,28 +281,26 @@ public class SqlTest {
 					.eq("i.e", form.e)
 				.endGrp()
 			.endGrp()
-		.endWhere();//@fmt:on
+		.endWhere();//@formatter:on
 	}
 
 	@Test
 	public void testSetCriteriaStrategy() {
-		Sql sql = new Sql().select("*").from("T t").where()//fmt:off
-			.between("a", 1, null)
-			.endWhere();//@fmt:on
+		Sql sql = new Sql().select("*").from("T t").where()// fmt:off
+				.between("a", 1, null).endWhere();//@formatter:on
 		assertEquals("Select * From T t Where a>=?", sql.toString());
 
 		sql = new Sql().setCriteriaStrategy(new DefaultCriteriaStrategy() {
 			@Override
 			public Criteria applyCriteria(Between c) {
-				if(Variables.isEmpty(c.getLeftBoundValue()) || Variables.isEmpty(c.getRightBoundValue())){
+				if (Variables.isEmpty(c.getLeftBoundValue()) || Variables.isEmpty(c.getRightBoundValue())) {
 					return null;
-				}else{
+				} else {
 					return c;
 				}
 			}
-		}).select("*").from("T t").where()//fmt:off
-			.between("a", 1, null)
-			.endWhere();//@fmt:on
+		}).select("*").from("T t").where()// fmt:off
+				.between("a", 1, null).endWhere();//@formatter:on
 		assertEquals("Select * From T t", sql.toString());
 	}
 }
