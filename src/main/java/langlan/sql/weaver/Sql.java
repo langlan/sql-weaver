@@ -57,12 +57,12 @@ import langlan.sql.weaver.i.VariablesBound;
  * <ul>
  * <li>Both <code>Sql.where([boolean])...endWhere()</code> And <code>.grp([boolean])...endGrp()</code> are entering and
  * leaving a CriteriaGroup。</li>
- * <li>Following code are entering and leaving a SubSqlCriteria: <br/>
- * <code>.sub("[Not ][Exists|In]")....endSub() <br/>
- * .exists()...endExists() <br/>
- * .in("..")....endIn() <br/>
- * .notExists()....endNotExists() <br/>
- * .notIn("..")....endNotIn() <br/>
+ * <li>Following code are entering and leaving a SubSqlCriteria: <br>
+ * <code>.sub("[Not ][Exists|In]")....endSub() <br>
+ * .exists()...endExists() <br>
+ * .in("..")....endIn() <br>
+ * .notExists()....endNotExists() <br>
+ * .notIn("..")....endNotIn() <br>
  * </code></li>
  * </ul>
  * About [fragment/criteria apply strategy] see {@link #setCriteriaStrategy(CriteriaStrategy)} and {@link
@@ -84,7 +84,7 @@ public class Sql extends SqlD<Sql> {
 	}
 
 	/**
-	 * Optional : End the Sql EXPLICITLY.<br/>
+	 * Optional : End the Sql EXPLICITLY.<br>
 	 * After this action, Sql instance can not be add or remove(by {@link #$(Boolean)}) any Fragment, neither
 	 * EXPLICITLY-End it again.
 	 */

@@ -1,51 +1,57 @@
 package langlan.sql.weaver.d;
 
-import langlan.sql.weaver.c.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
+
+import langlan.sql.weaver.c.Between;
+import langlan.sql.weaver.c.BinaryComparison;
+import langlan.sql.weaver.c.Custom;
+import langlan.sql.weaver.c.IsNull;
+import langlan.sql.weaver.c.SubCriteriaGroup;
+import langlan.sql.weaver.c.SubSqlCriteria;
 import langlan.sql.weaver.c.SubSqlCriteria.ExistsSubSql;
 import langlan.sql.weaver.c.SubSqlCriteria.InSubSql;
 import langlan.sql.weaver.c.SubSqlCriteria.NotExistsSubSql;
 import langlan.sql.weaver.c.SubSqlCriteria.NotInSubSql;
 import langlan.sql.weaver.e.SqlSyntaxException;
+import langlan.sql.weaver.i.Callback;
 import langlan.sql.weaver.i.Criteria;
 import langlan.sql.weaver.i.CriteriaStrategy;
 import langlan.sql.weaver.i.CriteriaStrategyAware;
 import langlan.sql.weaver.i.VariablesBound;
 import langlan.sql.weaver.u.Variables;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
-
 /**
- * Represents a group of criteria. Using toString() to get the sql-fragment it represents. <br/>
+ * Represents a group of criteria. Using toString() to get the sql-fragment it represents. <br>
  * <h1>Methods Summary</h1>
  * <ul>
- * <li> {@link #toString()} {@link #vars()}</li>
+ * <li>{@link #toString()} {@link #vars()}</li>
  * <li>Simple-Criteria Methods Summary
  * <ul>
- * <li> {@link #eq(String, Object)}, {@link #ne(String, Object)}</li>
- * <li> {@link #gt(String, Object)}, {@link #ge(String, Object)}, {@link #lt(String, Object)},
+ * <li>{@link #eq(String, Object)}, {@link #ne(String, Object)}</li>
+ * <li>{@link #gt(String, Object)}, {@link #ge(String, Object)}, {@link #lt(String, Object)},
  * {@link #le(String, Object)}</li>
- * <li> {@link #like(String, String)}, {@link #notLike(String, String)}</li>
- * <li> {@link #between(String, Object, Object)}, {@link #notBetween(String, Object, Object)}</li>
- * <li> {@link #in(String, Object)}, {@link #notIn(String, Object)}</li>
- * <li> {@link #isNull(String)}, {@link #isNotNull(String)}</li>
- * <li> {@link #__(String, Object...)}</li>
+ * <li>{@link #like(String, String)}, {@link #notLike(String, String)}</li>
+ * <li>{@link #between(String, Object, Object)}, {@link #notBetween(String, Object, Object)}</li>
+ * <li>{@link #in(String, Object)}, {@link #notIn(String, Object)}</li>
+ * <li>{@link #isNull(String)}, {@link #isNotNull(String)}</li>
+ * <li>{@link #__(String, Object...)}</li>
  * </ul>
  * </li>
  * <li>Sub-CriteriaGroup Methods Summary
  * <ul>
- * <li> {@link #grp()}, {@link #grp(boolean)} | {@link SubCriteriaGroup#endGrp()}</li>
+ * <li>{@link #grp()}, {@link #grp(boolean)} | {@link SubCriteriaGroup#endGrp()}</li>
  * </ul>
  * </li>
  * <li>Sub-Sql Methods Summary
  * <ul>
- * <li> {@link #subSql(String)} | {@link SubSqlCriteria#endSubSql()}</li>
- * <li> {@link #exists()} | {@link ExistsSubSql#endExists()}</li>
- * <li> {@link #notExists()} | {@link NotExistsSubSql#endNotExists()}</li>
- * <li> {@link #in(String)} | {@link InSubSql#endIn()}</li>
- * <li> {@link #notIn(String)} | {@link NotInSubSql#endNotIn()}</li>
+ * <li>{@link #subSql(String)} | {@link SubSqlCriteria#endSubSql()}</li>
+ * <li>{@link #exists()} | {@link ExistsSubSql#endExists()}</li>
+ * <li>{@link #notExists()} | {@link NotExistsSubSql#endNotExists()}</li>
+ * <li>{@link #in(String)} | {@link InSubSql#endIn()}</li>
+ * <li>{@link #notIn(String)} | {@link NotInSubSql#endNotIn()}</li>
  * </ul>
  * </li>
  * </ul>
@@ -54,10 +60,9 @@ import java.util.Stack;
  * @param <O> the type of the owner(parent scope)
  */
 public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends CriteriaStrategyAware & VariablesBound>
-	extends InlineStrategySupport<T>
-	implements CriteriaStrategyAware, VariablesBound {
+		extends InlineStrategySupport<T> implements CriteriaStrategyAware, VariablesBound {
 	private Stack<Criteria> criteriaStack = new Stack<Criteria>();
-	/** Keep an applied criteria list for analyze purpose, e.g. if contains none.*/ 
+	/** Keep an applied criteria list for analyze purpose, e.g. if contains none. */
 	private List<Criteria> appliedCriteria = new LinkedList<Criteria>();
 	/** false if is AndMode */
 	private boolean orMode;
@@ -93,9 +98,64 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return super.$invalidLastItem();
 	}
 
-//	public T apply() {
-//		return realThis();
-//	}
+	/** 
+	 * Apply criteria statements. Mainly for reusing code and keep code fluent. e.g.
+	 * <pre>
+	 *   FooSearchForm form = getSearchConditions(...); // or pass in method parameter.
+	 *   Sql sql = new Sql()
+	 *     .select("*").from("A a")
+	 *     .where()
+	 *       .apply((it) -> refAbout(it, form))               // Java 8 lambda.
+	 *       .apply(this::filterCommons)                      // Java 8 method reference.
+	 *       .applyIf(this::fiterSpecial, form.isSpecial()))  // Java 8 method reference.
+	 *       ... // other criteria
+	 *     .endWhere();
+	 *     
+	 *   ...
+	 *   // A.id  :: start with 100.
+	 *   // A.ref :: [100, infinite) master-id ; [1~99]: slave count ; null: unrelated to any. 
+	 *   void refAbout(WhereFragment<?> where, FooSearchForm form){
+	 *     where(true)
+	 *        .ge("a.ref", 100)                    .$("slave".equals(form.refFlag))        
+	 *        .lt("a.ref", 100)                    .$("master".equals(form.refFlag))
+	 *        .isNull("a.ref")                     .$("none-related".equals(form.refFlag))        
+	 *        __("a.ref is null or a.ref < 100")   .$("independent".equals(form.refFlag))
+	 *      ;
+	 *   }
+	 *   
+	 *   void filterCommons(WhereFragment<?> where){
+	 *     where()
+	 *        .like("a.col1", constVal1)
+	 *        .eq("a.col2", constVal2)        
+	 *      ;
+	 *   }
+	 *   
+	 *   void fiterSpecial(WhereFragment<?> where){
+	 *     where()
+	 *        .like("a.col1", constVal1)
+	 *        .eq("a.col2", constVal2)        
+	 *      ;
+	 *   }
+	 *     
+	 * </pre> 
+	 * 
+	 * @see #applyIf(Callback, Boolean)
+	 **/
+	public T apply(Callback<T> callback) {
+		callback.call(realThis());
+		return realThis();
+	}
+	
+	/** 
+	 * Apply callback only when condition is true (null will be treated as false). 
+	 * @see CriteriaGroupD#apply(Callback)
+	 */
+	public T applyIf(Callback<T> callback, Boolean condition) {
+		if (condition != null && condition) {
+			return apply(callback);
+		}
+		return realThis();
+	}
 
 	/**
 	 * Add one custom criteria with some variables. e.g.:
@@ -186,7 +246,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	}
 
 	/**
-	 * Add a [Exists (SubSql)] criteria.<br/>
+	 * Add a [Exists (SubSql)] criteria.<br>
 	 * same as sub("Exists"), but should be ended by endExists() instead of endSubSql(); e.g.
 	 *
 	 * <pre>
@@ -347,7 +407,7 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	}
 
 	/**
-	 * Add a [Not Exists $SubSql] criteria.<br/>
+	 * Add a [Not Exists $SubSql] criteria.<br>
 	 * same as sub("Not Exists"), but should ended by endNotExists() instead of endSubSql();
 	 */
 	public SubSqlCriteria.NotExistsSubSql<T> notExists() {

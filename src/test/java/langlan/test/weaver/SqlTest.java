@@ -89,7 +89,7 @@ public class SqlTest {
 			.subSql("x.id in").select("z.id").from("Z z").where()
 				.subSql("Exists").select("o.id").from("O o").where()
 					.__("o.id=z.id")
-				.endWhere()	.endSubSql()
+				.endWhere().endSubSql()
 			.endWhere().endSubSql()
 		.endWhere();//@formatter:on
 		Assert.assertEquals(

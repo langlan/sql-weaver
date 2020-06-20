@@ -9,8 +9,9 @@
 	<url>https://github.com/langlan/sql-weaver</url>
 	<packaging>jar</packaging>
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.java>1.6</version.java>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>		
+		<maven.compiler.target>1.6</maven.compiler.target>
+    	<maven.compiler.source>1.6</maven.compiler.source>
 		<version.plugin.compiler>3.0</version.plugin.compiler>
 		<version.plugin.compiler.eclipse>2.4</version.plugin.compiler.eclipse>
 		<version.plugin.source>2.4</version.plugin.source>
@@ -48,22 +49,22 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
-			<plugin>
+			<!-- <plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${version.plugin.compiler}</version>
 				<configuration>
 					<source>${version.java}</source>
 					<target>${version.java}</target>
-					<!--<compilerId>eclipse</compilerId>-->
+					<compilerId>eclipse</compilerId>
 				</configuration>
-				<!--<dependencies>
+				<dependencies>
 					<dependency>
 						<groupId>org.codehaus.plexus</groupId>
 						<artifactId>plexus-compiler-eclipse</artifactId>
 						<version>${version.plugin.compiler.eclipse}</version>
 					</dependency>
-				</dependencies>-->
-			</plugin>
+				</dependencies>
+			</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -79,21 +80,21 @@
 				</executions>
 			</plugin>
 			<!-- Javadoc -->
-			<plugin>
+			<!-- <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
 				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			        <execution>
+			          <id>attach-javadocs</id>
+			          <configuration>
+			            <additionalparam>${javadoc.opts}</additionalparam>
+			          </configuration>
+			        </execution>
+			    </executions>
+			</plugin> -->
 			<!-- GPG -->
-			<plugin>
+			<!-- <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
@@ -105,7 +106,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 		</plugins>
 	</build>
 	<distributionManagement>

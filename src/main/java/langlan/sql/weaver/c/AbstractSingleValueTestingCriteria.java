@@ -3,9 +3,9 @@ package langlan.sql.weaver.c;
 import langlan.sql.weaver.i.Criteria;
 
 /**
- * For : <br/>
- * =, >, <, >=, <=, <>, <br/>
- * LIKE, IN, BETWEEN, IS NULL, <br/>
+ * For : <br>
+ * =, >, <, >=, <=, <>, <br>
+ * LIKE, IN, BETWEEN, IS NULL, <br>
  * NOT LIKE, NOT IN, NOT BETWEEN, IS NOT NULL
  */
 public abstract class AbstractSingleValueTestingCriteria extends AbstractCriteria {

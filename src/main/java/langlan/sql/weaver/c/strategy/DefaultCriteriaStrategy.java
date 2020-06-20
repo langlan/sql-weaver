@@ -24,7 +24,7 @@ import java.util.Map;
  * NOTE: stategy-method<ul>
  * <li>returns null means/indicate  criteria should not apply</li>
  * <li>returns original-criteria means/indicate criteria should apply straightforward</li>
- * <li>returns other-not-null-criteria means/indicate should apply return criterial instead of the original</li>
+ * <li>returns other-not-null-criteria means/indicate should apply returned criteria instead of the original</li>
  * </ul>
  *
  * @see #applyCriteria(Between)
