@@ -4,7 +4,7 @@
 	<name>sql-weaver</name>
 	<groupId>com.github.langlan</groupId>
 	<artifactId>langlan-sql-weaver</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.2.0</version>
 	<description>Concatenating Sql fragments(and organizing Bind-Variables) dynamically by strategies.</description>
 	<url>https://github.com/langlan/sql-weaver</url>
 	<packaging>jar</packaging>
@@ -49,6 +49,8 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
+			<!-- When Using in eclipse, comment out. or compile error happens.  -->
+			<!-- It seems that there's no need to use this plugin any more.  -->
 			<!-- <plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${version.plugin.compiler}</version>
@@ -80,24 +82,35 @@
 				</executions>
 			</plugin>
 			<!-- Javadoc -->
-			<!-- <plugin>
+			<!-- https://stackoverflow.com/questions/39616344/how-to-disable-javadoc-warnings-in-maven-javadoc-plugin -->
+			<!-- https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html -->
+       		<!-- https://maven.apache.org/plugins/maven-javadoc-plugin/faq.html -->
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
 				<executions>
 			        <execution>
 			          <id>attach-javadocs</id>
+			          <goals>
+                          <goal>jar</goal>
+                      </goals>
 			          <configuration>
-			            <additionalparam>${javadoc.opts}</additionalparam>
+			            <additionalparam>-Xdoclint:none</additionalparam>
+				        <additionalOptions>-Xdoclint:none</additionalOptions>
+				        <additionalJOption>-Xdoclint:none</additionalJOption>
 			          </configuration>
 			        </execution>
 			    </executions>
-			</plugin> -->
+			</plugin>
 			<!-- GPG -->
-			<!-- <plugin>
+			<!-- When using cli gpg toolchain (e.g. provided by git-for-windows): add parameter to avoid no tty error. -->
+			<!-- -Dgpg.passphrase=thephrase -->
+			<!-- see https://maven.apache.org/plugins/maven-gpg-plugin/usage.html -->
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
+				<version>1.6</version>
 				<executions>
 					<execution>
 						<phase>verify</phase>
@@ -106,7 +119,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> -->
+			</plugin>
 		</plugins>
 	</build>
 	<distributionManagement>

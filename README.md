@@ -29,8 +29,9 @@ Sql sql = new Sql().select("e.id").from("Employee e").where() //@formatter:off
 String _sql = sql.toString();
 Object[] vars = sql.vars();
 
-// ... Use the sql and vars to query...
-// List<Long> ids = dao.queryAll(sql.toString(), sql.vars()); // or if we have a common dao.
+// ... Use the _sql and vars to query...
+// or if we have a common dao.
+// List<Long> ids = dao.queryAll(sql.toString(), sql.vars()); 
 ```
 The result will be different according the states of the `form` object.
 Suppose `form={departmentId: 10010, salary : 10000, title : ["supervisor"]`, Then 
