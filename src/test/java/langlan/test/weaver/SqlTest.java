@@ -60,13 +60,15 @@ public class SqlTest {
 
 		// Exists
 		String plainSql = "Select x.* From X x Where x.a=? And Exists(Select 1 From Y)";
-		sql = new Sql().select("x.*").from("X x").where()//@formatter:off
+		sql = new Sql().select("x.*").from("X x").where() //@formatter:off
 			.eq("x.a", "1")
 			.subSql("Exists").select("1").from("Y").endSubSql()
-		.endWhere();//@formatter:on
+		.endWhere(); //@formatter:on
 		Assert.assertEquals(plainSql, sql.toString());
-		sql = new Sql().select("x.*").from("X x").where().eq("x.a", "1").exists().select("1").from("Y").endExists()
-				.endWhere();
+		sql = new Sql().select("x.*").from("X x").where() //@formatter:off
+			.eq("x.a", "1")
+			.exists().select("1").from("Y").endExists()
+		.endWhere(); //@formatter:on
 		Assert.assertEquals(plainSql, sql.toString());
 
 		// Not Exists And Custom

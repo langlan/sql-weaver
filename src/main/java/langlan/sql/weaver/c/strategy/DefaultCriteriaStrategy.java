@@ -6,31 +6,27 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import langlan.sql.weaver.c.Between;
+import langlan.sql.weaver.c.BetweenRange;
 import langlan.sql.weaver.c.BinaryComparison;
+import langlan.sql.weaver.c.Custom;
 import langlan.sql.weaver.c.IsNull;
 import langlan.sql.weaver.e.DevException;
 import langlan.sql.weaver.i.Criteria;
 import langlan.sql.weaver.i.CriteriaStrategy;
 import langlan.sql.weaver.u.Variables;
+import langlan.sql.weaver.u.form.Range;
 
 /**
- * A default {@link CriteriaStrategy} implementation.
- * <p>
- * This class implements several methods each responsible for a specific Criteria class. Subclasses can override or
- * define other
+ * A default {@link CriteriaStrategy} implementation. <p> This class implements several methods each responsible for a
+ * specific Criteria class. Subclasses can override or define other
  * 
  * <pre>
  *     <code><span style="font-weight: bold">public</span> Criteria applyCriteria(Criteria_Specific_Type)</code>
  * </pre>
  * 
- * stategy-methods to support custom logic.
- * <p>
- * NOTE: stategy-method
- * <ul>
- * <li>returns null means/indicate criteria should not apply</li>
- * <li>returns original-criteria means/indicate criteria should apply straightforward</li>
- * <li>returns other-not-null-criteria means/indicate should apply returned criteria instead of the original</li>
- * </ul>
+ * stategy-methods to support custom logic. <p> NOTE: stategy-method <ul> <li>returns null means/indicate criteria
+ * should not apply</li> <li>returns original-criteria means/indicate criteria should apply straightforward</li>
+ * <li>returns other-not-null-criteria means/indicate should apply returned criteria instead of the original</li> </ul>
  *
  * @see #applyCriteria(Between)
  * @see #applyCriteria(BinaryComparison)
@@ -39,7 +35,12 @@ import langlan.sql.weaver.u.Variables;
  */
 public class DefaultCriteriaStrategy implements CriteriaStrategy {
 	public static final CriteriaStrategy INSTANCE = new DefaultCriteriaStrategy();
+	public static final String TIP_IS_NULL = "__IS__NULL__";
 	private Map<Class<? extends Criteria>, Method> cache = initCache();
+	
+	protected DefaultCriteriaStrategy() {
+		// TODO Auto-generated constructor stub
+	}
 
 	/** default Strategy method : this implementation just return original not matter what */
 	public Criteria applyCriteria(Criteria criteria) {
@@ -47,40 +48,75 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 	}
 
 	/**
-	 * Strategy method for {@link BinaryComparison}
-	 * <ul>
-	 * <li>bound-value not empty: original</li>
-	 * <li>bound-value empty: null(not apply)</li>
-	 * </ul>
+	 * Strategy method for {@link BinaryComparison} <ul> <li>bound-value not empty: original</li> <li>bound-value empty:
+	 * null(not apply)</li> </ul>
 	 */
 	public Criteria applyCriteria(BinaryComparison criteria) {
-		return !Variables.isEmpty(criteria.getBoundValue()) ? criteria : null;
+		return Variables.isNotEmpty(criteria.getBoundValue()) ? criteria : null;
 	}
 
 	/**
-	 * Strategy method for {@link Between}
-	 * <ul>
-	 * <li>both left, right not null and not equals: -> original</li>
-	 * <li>both left, right not null and equals: -> prop=left</li>
-	 * <li>only left not null: -> prop>=?(left)</li>
-	 * <li>only right not null: -> prop<=?(right)</li>
-	 * <li>both left, right null: -> null(not apply)</li>
-	 * </ul>
+	 * Strategy method for {@link Between} <ul> <li>both left, right not null and not equals: -> original</li> <li>both
+	 * left, right not null and equals: -> prop=left</li> <li>only left not null: -> prop>=?(left)</li> <li>only right
+	 * not null: -> prop<=?(right)</li> <li>both left, right null: -> null(not apply)</li> </ul>
 	 */
 	public Criteria applyCriteria(Between criteria) {
 		boolean leftApply = Variables.isNotEmpty(criteria.getLeftBoundValue());
 		boolean rightApply = Variables.isNotEmpty(criteria.getRightBoundValue());
 		if (leftApply && rightApply) {
 			if (Variables.equals(criteria.getLeftBoundValue(), criteria.getRightBoundValue())) {
-				return new BinaryComparison(criteria.getTesting(), "=", criteria.getLeftBoundValue());
+				String operator = criteria.isNegative() ? "<>" : "=";
+				return new BinaryComparison(criteria.getTesting(), operator, criteria.getLeftBoundValue());
+			} else {
+				return criteria;
 			}
-			return criteria;
 		} else if (leftApply) {
-			return new BinaryComparison(criteria.getTesting(), ">=", criteria.getLeftBoundValue());
+			String operator = criteria.isNegative() ? "<" : ">=";
+			return new BinaryComparison(criteria.getTesting(), operator, criteria.getLeftBoundValue());
 		} else if (rightApply) {
-			return new BinaryComparison(criteria.getTesting(), "<=", criteria.getRightBoundValue());
+			String operator = criteria.isNegative() ? ">" : "<=";
+			return new BinaryComparison(criteria.getTesting(), operator, criteria.getRightBoundValue());
 		} else {
 			return null;
+		}
+	}
+
+	/**
+	 * <ul> <li>both left, right not null and not equals: -> original</li> <li>both left, right not null and equals: ->
+	 * prop=left</li> <li>only left not null: -> prop>=?(left)</li> <li>only right not null: -> prop<=?(right)</li>
+	 * <li>both left, right null: -> null(not apply)</li> </ul>
+	 */
+	public Criteria applyCriteria(BetweenRange criteria) {
+		Range<?> range = criteria.getRange();
+		if (range == null) {
+			return null;
+		} else if (TIP_IS_NULL.equals(range.getRaw())) {
+			return new IsNull(criteria.getTesting());
+		}
+
+		String prop = criteria.getTesting();
+		Object min = range.getMin(), max = range.getMax();
+		boolean minApply = Variables.isNotEmpty(min), maxApply = Variables.isNotEmpty(max);
+		boolean minEx = range.isMinExclusive(), maxEx = range.isMaxExclusive();
+		boolean negative = criteria.isNegative();
+
+		if ((!minEx || !minApply) && (!maxEx || !maxApply)) { // if no applicable-exclusive
+			return applyCriteria((Between) criteria);
+		} else if (minApply && maxApply) { // both apply
+			if (Variables.equals(min, max)) {// TODO: may be we need a configuration point?
+				if (minEx && maxEx) { // both exclusive
+					return !negative ? new Custom("1<>1") : new Custom("1=1");
+				} else { // foo between (x, x] === foo=x
+					return new BinaryComparison(criteria.getTesting(), !negative ? "=" : "<>", min);
+				}
+			}
+			return criteria;
+		}
+		// half-apply (and exclusive)
+		if (minApply) {
+			return new BinaryComparison(prop, negative ? ">" : "<=", min);
+		} else { // maxApply
+			return new BinaryComparison(prop, negative ? "<" : ">=", max);
 		}
 	}
 
@@ -101,12 +137,13 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 		}
 	}
 
+	// find all declared strategy-methods and put them in cache.
 	private Map<Class<? extends Criteria>, Method> initCache() {
 		ConcurrentHashMap<Class<? extends Criteria>, Method> map = new ConcurrentHashMap<Class<? extends Criteria>, Method>();
 		Method[] methods = this.getClass().getMethods();
 		for (Method m : methods) {
 			// convention : should be public
-			boolean b = Modifier.isPublic(m.getModifiers()); 
+			boolean b = Modifier.isPublic(m.getModifiers());
 			// convention : name should be `applyCriteria`
 			b = b && m.getName().equals("applyCriteria");
 			// convention : return type should be (or sub-type of) Criteria
@@ -118,10 +155,10 @@ public class DefaultCriteriaStrategy implements CriteriaStrategy {
 			if (b) {
 				@SuppressWarnings("unchecked")
 				Class<? extends Criteria> parameterType = (Class<? extends Criteria>) ptypes[0];
-				Method strategyMethod = map.get(parameterType);
-				if (strategyMethod == null) {
+				Method existsM = map.get(parameterType);
+				if (existsM == null) {
 					map.put(parameterType, m);
-				} else if (strategyMethod.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
+				} else if (existsM.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
 					map.put(parameterType, m);// override.
 				}
 			}

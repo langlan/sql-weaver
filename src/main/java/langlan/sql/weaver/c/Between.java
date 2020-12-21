@@ -5,6 +5,11 @@ public class Between extends AbstractSingleValueTestingCriteria {
 		super(testing);
 		this.vars = new Object[] { left, right };
 	}
+	
+	protected Between(String testing, Object left, Object right, boolean calcImmediate) {
+		super(testing, calcImmediate);
+		this.vars = new Object[] { left, right };
+	}
 
 	public Object getLeftBoundValue() {
 		return vars[0];

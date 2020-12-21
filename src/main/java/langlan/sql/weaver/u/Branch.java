@@ -2,6 +2,7 @@ package langlan.sql.weaver.u;
 
 import langlan.sql.weaver.e.BranchStateException;
 
+/** legacy design: unused */
 public class Branch {
 	private static final int INIT_OR_END = 0, IF = 1, ELSE_IF = 2, ELSE = 3;
 	private int status;

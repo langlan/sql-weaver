@@ -69,20 +69,22 @@ The in-line strategy method `$(Boolean apply)` accept a Boolean parameter, when 
 - When pair(`grp&endGrp, subSql&endSubSql, in&endIn, ...`), `$` invocation can follow the begin or end method, but not both. 
 
 ## Criteria & Fragment methods
-Copy from javadoc of `Sql`, `SqlD`, `CriteriaD`, see javadoc for more descriptions.
+Copy from javadoc of `Sql`, `SqlD`, `CriteriaGroupD`, see javadoc for more descriptions.
 
-**Custom-Fragment Methods**
-- `__(String fragment, Object... bindVariables)`
-- `____(String fragment, Object... bindVariables)`
+**Custom-Fragment Methods** (SqlD)
+- `__(String fragment, Object... bindVariables)` **add a custom cause.**
+- `____(String fragment, Object... bindVariables)` add a custom item for ['Select'|'From'|'Order by'|'Group By'] previous cause.
  
 **Simple-Criteria Methods Summary** 
 - `eq(String, Object), ne(String, Object)`
-- `gt(String, Object), ge(String, Object), lt(String, Object), le(String, Object)`
+- `gt(String, Object), lt(String, Object)`
+- `ge(String, Object), le(String, Object)`
 - `like(String, String), notLike(String, String)`
+- `like(String, String, boolean, boolean), notLike(String, String, boolean, boolean)`
 - `between(String, Object, Object), notBetween(String, Object, Object)`
 - `in(String, Object), notIn(String, Object)`
 - `isNull(String), isNotNull(String)`
-- `__(String, Object...)` **for custom criteria**.
+- `__(String, Object...)` **add a custom criteria**.
 
 **Sub-CriteriaGroup Methods Summary**
 - `grp(), grp(boolean) | SubCriteriaGroup.endGrp()`

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Stack;
 
 import langlan.sql.weaver.c.Between;
+import langlan.sql.weaver.c.BetweenRange;
 import langlan.sql.weaver.c.BinaryComparison;
 import langlan.sql.weaver.c.Custom;
 import langlan.sql.weaver.c.IsNull;
@@ -22,6 +23,7 @@ import langlan.sql.weaver.i.CriteriaStrategy;
 import langlan.sql.weaver.i.CriteriaStrategyAware;
 import langlan.sql.weaver.i.VariablesBound;
 import langlan.sql.weaver.u.Variables;
+import langlan.sql.weaver.u.form.Range;
 
 /**
  * Represents a group of criteria. Using toString() to get the sql-fragment it represents. <br>
@@ -31,9 +33,10 @@ import langlan.sql.weaver.u.Variables;
  * <li>Simple-Criteria Methods Summary
  * <ul>
  * <li>{@link #eq(String, Object)}, {@link #ne(String, Object)}</li>
- * <li>{@link #gt(String, Object)}, {@link #ge(String, Object)}, {@link #lt(String, Object)},
- * {@link #le(String, Object)}</li>
+ * <li>{@link #gt(String, Object)}, {@link #lt(String, Object)}</li>
+ * <li>{@link #ge(String, Object)}, {@link #le(String, Object)}</li>
  * <li>{@link #like(String, String)}, {@link #notLike(String, String)}</li>
+ * <li>{@link #like(String, String, boolean, boolean)}, {@link #notLike(String, String, boolean, boolean)}</li>
  * <li>{@link #between(String, Object, Object)}, {@link #notBetween(String, Object, Object)}</li>
  * <li>{@link #in(String, Object)}, {@link #notIn(String, Object)}</li>
  * <li>{@link #isNull(String)}, {@link #isNotNull(String)}</li>
@@ -98,8 +101,9 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		return super.$invalidLastItem();
 	}
 
-	/** 
+	/**
 	 * Apply criteria statements. Mainly for reusing code and keep code fluent. e.g.
+	 * 
 	 * <pre>
 	 *   FooSearchForm form = getSearchConditions(...); // or pass in method parameter.
 	 *   Sql sql = new Sql()
@@ -136,8 +140,8 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 *        .eq("a.col2", constVal2)        
 	 *      ;
 	 *   }
-	 *     
-	 * </pre> 
+	 * 
+	 * </pre>
 	 * 
 	 * @see #applyIf(Callback, Boolean)
 	 **/
@@ -145,9 +149,10 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 		callback.call(realThis());
 		return realThis();
 	}
-	
-	/** 
-	 * Apply callback only when condition is true (null will be treated as false). 
+
+	/**
+	 * Apply callback only when condition is true (null will be treated as false).
+	 * 
 	 * @see CriteriaGroupD#apply(Callback)
 	 */
 	public T applyIf(Callback<T> callback, Boolean condition) {
@@ -197,6 +202,14 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	 */
 	public T between(String exp, Object leftValue, Object rightValue) {
 		Between criteria = new Between(exp, leftValue, rightValue);
+		return addCriteria(criteria);
+	}
+
+	/**
+	 * Add a (Between) criteria
+	 */
+	public T between(String exp, Range<?> range) {
+		Criteria criteria = new BetweenRange(exp, range);
 		return addCriteria(criteria);
 	}
 
@@ -405,7 +418,12 @@ public abstract class CriteriaGroupD<T extends CriteriaGroupD<T, O>, O extends C
 	public T notBetween(String exp, Object leftValue, Object rightValue) {
 		return addCriteria(new Between(exp, leftValue, rightValue).negative());
 	}
-
+	
+	/** Add a (Not Between) criteria */
+	public T notBetween(String exp, Range<?> range) {
+		return addCriteria(new BetweenRange(exp, range).negative());
+	}
+	
 	/**
 	 * Add a [Not Exists $SubSql] criteria.<br>
 	 * same as sub("Not Exists"), but should ended by endNotExists() instead of endSubSql();

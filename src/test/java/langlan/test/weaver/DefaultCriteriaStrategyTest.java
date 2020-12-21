@@ -1,15 +1,21 @@
 package langlan.test.weaver;
 
-import langlan.sql.weaver.c.*;
-import langlan.sql.weaver.c.strategy.DefaultCriteriaStrategy;
-import langlan.sql.weaver.i.Criteria;
 import org.junit.Assert;
 import org.junit.Test;
 
+import langlan.sql.weaver.c.Between;
+import langlan.sql.weaver.c.BetweenRange;
+import langlan.sql.weaver.c.BinaryComparison;
+import langlan.sql.weaver.c.Custom;
+import langlan.sql.weaver.c.IsNull;
+import langlan.sql.weaver.c.strategy.DefaultCriteriaStrategy;
+import langlan.sql.weaver.i.Criteria;
+import langlan.sql.weaver.u.form.Range;
+
 public class DefaultCriteriaStrategyTest extends Assert {
 	@Test
-	public void test() {
-		DefaultCriteriaStrategy dcs = new DefaultCriteriaStrategy();
+	public void testIsNull() {
+		DefaultCriteriaStrategy dcs = (DefaultCriteriaStrategy) DefaultCriteriaStrategy.INSTANCE;
 		Criteria criteria = new IsNull("a");
 		assertSame(criteria, dcs.apply(criteria));
 
@@ -32,11 +38,12 @@ public class DefaultCriteriaStrategyTest extends Assert {
 
 	@Test
 	public void testGetStrategyMethod() throws Exception {
-		DefaultCriteriaStrategy dcs = new DefaultCriteriaStrategy();
+		DefaultCriteriaStrategy dcs = (DefaultCriteriaStrategy) DefaultCriteriaStrategy.INSTANCE;
 		Class<DefaultCriteriaStrategy> clazz = DefaultCriteriaStrategy.class;
 		assertEquals(clazz.getMethod("applyCriteria", IsNull.class), dcs.getStrategyMethod(IsNull.class));
 		assertEquals(clazz.getMethod("applyCriteria", Between.class), dcs.getStrategyMethod(Between.class));
-		assertEquals(clazz.getMethod("applyCriteria", BinaryComparison.class), dcs.getStrategyMethod(BinaryComparison.class));
+		assertEquals(clazz.getMethod("applyCriteria", BinaryComparison.class),
+				dcs.getStrategyMethod(BinaryComparison.class));
 		assertEquals(clazz.getMethod("applyCriteria", Criteria.class), dcs.getStrategyMethod(Custom.class));
 
 		BinaryComparison eqEmpty = (new BinaryComparison("a", "=", ""));
@@ -56,5 +63,21 @@ public class DefaultCriteriaStrategyTest extends Assert {
 
 		Custom custom = new Custom("a=b");
 		assertSame(custom, dcs.applyCriteria(custom));
+	}
+
+	@Test
+	public void testBetweenRange() {
+		DefaultCriteriaStrategy dcs = (DefaultCriteriaStrategy) DefaultCriteriaStrategy.INSTANCE;
+
+		// compatible with Between.
+		for (String srange : new String[] { "[1,2]", "1, 2", "[1,2", "1,2]" }) {
+			BetweenRange between = new BetweenRange("a", Range.of(srange));
+			assertSame(between, dcs.applyCriteria(between));
+		}
+		
+		assertEquals(new BinaryComparison("a", "=", "1"), dcs.applyCriteria(new BetweenRange("a", Range.of("1, 1"))));
+		assertEquals(new BinaryComparison("a", ">=", "1"), dcs.applyCriteria(new BetweenRange("a", Range.of("1,"))));
+		assertEquals(new BinaryComparison("a", "<=", "1"), dcs.applyCriteria(new BetweenRange("a", Range.of(",1"))));
+		assertNull(dcs.applyCriteria(new BetweenRange("a", Range.of(","))));
 	}
 }
